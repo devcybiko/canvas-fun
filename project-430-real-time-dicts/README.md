@@ -1,4 +1,4 @@
-# project-410-real-time-two-objects
+# project-430-real-time-dicts
 
 ```js
 const canvas = document.querySelector('#my_canvas');
@@ -39,6 +39,8 @@ function timer() {
 ```
 * Here, we've replaced our multiple arrays of scalars with a single array of `dictionaries` or `hashes`
 * This simplifies our code, and makes it easier to add new objects
+* And it makes more clear what our objects are composed of
+* AND it will make it easier to add more state variables when the time comes
 * All of our functions now take a single "object" to operate on
 * This also reduces our dependency on "global" variables - which are evil
 
