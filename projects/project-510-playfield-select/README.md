@@ -1,4 +1,4 @@
-# project-500-playfield-select
+# project-510-playfield-select
 
 ## Playfield.js
 ```js
@@ -61,7 +61,7 @@ class Box {
   * and make it the 'selected' object.
   * The 'selected' object will have a black border around it
 * `Playfield.constructor()`
-  * `this.canvas.playfield = this;` - this allows us to get at the playfield from the canvas inside the listners
+  * `this.canvas.playfield = this;` - this allows us to get at the playfield from the canvas inside the listeners
   * `this.selectedObj` - keep track of the currently selected object
   * `this.canvas.addEventListener('mousedown', this.handleMouseDown);` - add the mouse listener
   * `_findObjInBounds(x, y)` - a utility function that finds an object that encloses the mouse pointer

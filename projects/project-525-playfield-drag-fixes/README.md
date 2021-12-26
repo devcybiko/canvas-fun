@@ -35,7 +35,7 @@ class Playfield {
 
 ## Summary
 * To fix some of the foreground/background issues
-* To select the front-most object, the `_findObjInBounds(x,y)` method is adjusted to search `this.objs` in reverse order
+* To select the front-most object, the `_findObjInBounds(x,y)` method is adjusted to search `this.objs` in reverse order (from the one 'closest' to the user, to the one furthest away)
 * When the `handleMouseDown` is called, the new functions `toFront(obj)` and `toBack(obj)` are called when the object is clicked
   * `toBack(obj)` is called if the `shiftkey` was pressed when the object was selected
   * `toFront(obj)` is called otherwise, when the object is clicked

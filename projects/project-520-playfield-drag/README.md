@@ -1,4 +1,4 @@
-# project-500-playfields
+# project-520-playfield-drag
 
 ## Playfield.js
 ```js
@@ -63,7 +63,8 @@ class Box {
 * Some additions to `Box`
   * the `drag(x,y)` method allows the object to update its position and do anything else necessary
 * SOME BUGS
-  * the 'back most' object is always selected. If the objects overlap, the one in the back is selected
+  * the 'back-most' object (the one furthest from the user) is always selected. 
+    * If the objects overlap, the one in the back is selected
   * it would be nice if the selected object was moved to the front
   * it would also be nice if 'shift-click' moved the object to the back
   * these will be fixed in the next project
