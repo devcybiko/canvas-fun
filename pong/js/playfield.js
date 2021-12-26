@@ -1,5 +1,12 @@
-class Playfield {
+class Mixin {
+    static mixin(mixer) {
+        Object.assign(this.prototype, mixer);
+    }
+}
+
+class Playfield extends Mixin {
     constructor(canvasId) {
+        super();
         this.canvas = document.querySelector(canvasId);
         this.ctx = this.canvas.getContext('2d');
         this.objs = [];
@@ -84,27 +91,32 @@ class Playfield {
     }
     start() {
         this.redraw();
-        setInterval(this.timer, 125, this);
+        this.timerId = setInterval(this.timer, 125, this);
+    }
+    stop() {
+        clearInterval(this.timerId);
+        this.redraw();
     }
     goAll() {
         for (let obj of this.objs) obj.go();
     }
-    collisions(theObj) {
+    collisions(theObj, x=theObj.x, y=theObj.y, w=theObj.w, h=theObj.h) {
         let results = [];
         for (let obj of this.objs) {
             if (theObj === obj) continue;
-            if (obj.inBounds(theObj.x, theObj.y) ||
-                obj.inBounds(theObj.x + theObj.w, theObj.y) ||
-                obj.inBounds(theObj.x, theObj.y + theObj.h) ||
-                obj.inBounds(theObj.x + theObj.w, theObj.y + theObj.h))
+            if (obj.inBounds(x, y) ||
+                obj.inBounds(x + w, y) ||
+                obj.inBounds(x, y + h) ||
+                obj.inBounds(x + w, y + h))
                 results.push(obj);
         }
         return results;
     }
 }
 
-class PObject {
+class PObject extends Mixin {
     constructor(name, color, x, y, w, h) {
+        super();
         this.playfield = null;
         this.name = name;
         this.color = color;
@@ -138,94 +150,5 @@ class PObject {
         if (key === "ArrowLeft") this.x -= 10;
         if (key === "ArrowRight") this.x += 10;
         this.playfield.redraw();
-    }
-}
-
-const Meanderer = {
-    Meanderer() { // all mixins must have an init method
-        this.dx = random(-10, 10);
-        this.dy = random(-10, 10);
-    },
-    go() {
-        if (this.isSelected) return;
-        this.x += this.dx;
-        this.y += this.dy;
-
-        let collisions = this.playfield.collisions(this);
-        if (collisions.length) {
-            this.dx = random(-10, 10);
-            this.dy = random(-10, 10);
-        }
-
-        if (this.x < 0) {
-            this.x = 0;
-            this.dx = -this.dx;
-        }
-        if (this.x + this.w > this.playfield.canvas.width) {
-            this.x = this.playfield.canvas.width - this.w;
-            this.dx = -this.dx;
-        }
-        if (this.y < 0) {
-            this.y = 0;
-            this.dy = -this.dy;
-        }
-        if (this.y + this.h > this.playfield.canvas.height) {
-            this.y = this.playfield.canvas.height - this.h;
-            this.dy = -this.dy;
-        }
-    }
-}
-
-class Box extends PObject {
-    static {
-        mixin(Box, Meanderer);
-    }
-    constructor(name, color, x, y, w, h) {
-        super(name, color, x, y, w, h);
-        this.Meanderer();
-    }
-    draw(ctx) {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.w, this.h);
-
-        ctx.font = '12px sans-serif';
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(this.name, this.x + this.w / 2, this.y + this.h / 2);
-
-        if (this.isSelected) {
-            ctx.strokeStyle = 'black';
-            ctx.strokeRect(this.x, this.y, this.w, this.h);
-        }
-    }
-}
-
-class Circle extends PObject {
-    static {
-        mixin(Circle, Meanderer);
-    }
-    constructor(name, color, x, y, w, h) {
-        super(name, color, x, y, w, h);
-        this.Meanderer();
-    }
-    draw(ctx) {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.ellipse(this.x + this.w / 2, this.y + this.h / 2, this.w / 2, this.h / 2, 0, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.font = '12px sans-serif';
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(this.name, this.x + this.w / 2, this.y + this.h / 2);
-
-        if (this.isSelected) {
-            ctx.strokeStyle = 'black';
-            ctx.beginPath();
-            ctx.ellipse(this.x + this.w / 2, this.y + this.h / 2, this.w / 2, this.h / 2, 0, 0, 2 * Math.PI);
-            ctx.stroke();
-        }
     }
 }
