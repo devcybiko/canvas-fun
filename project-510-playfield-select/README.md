@@ -1,4 +1,4 @@
-# project-500-playfields
+# project-500-playfield-select
 
 ## Playfield.js
 ```js
