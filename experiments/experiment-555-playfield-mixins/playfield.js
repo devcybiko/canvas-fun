@@ -93,7 +93,7 @@ class Playfield extends Mixin {
     }
     _handleMouseMove(event) {
         this._dragging(event.offsetX - playfield.grabDX, event.offsetY - playfield.grabDY, event);
-        this._moving(event.offsetX - playfield.grabDX, event.offsetY - playfield.grabDY, event);
+        this._mousing(event.offsetX - playfield.grabDX, event.offsetY - playfield.grabDY, event);
     }
     _dragging(x, y) {
         if (this.dragObj) {
@@ -183,19 +183,19 @@ class Playfield extends Mixin {
     keydown(key, event) {
         //
     }
-    _moving(x, y, event) {
+    _mousing(x, y, event) {
         let stopProcessing = false;
         for (let i = this.objs.length - 1; i >= 0; i--) {
             let obj = this.objs[i];
             if (!obj.inBounds(event.offsetX, event.offsetY)) continue;
-            stopProcessing = obj.moving(event.offsetX - obj.x, event.offsetY - obj.y, event);
+            stopProcessing = obj.mousing(event.offsetX - obj.x, event.offsetY - obj.y, event);
             if (stopProcessing) break;
         }
         if (!stopProcessing) {
-            this.moving(event.offsetX, event.offsetY, event);
+            this.mousing(event.offsetX, event.offsetY, event);
         }
     }
-    moving(x, y, event) {
+    mousing(x, y, event) {
     }
 }
 
@@ -222,7 +222,7 @@ class PObject extends Mixin {
         this.x = x;
         this.y = y;
     }
-    moving(x, y, event) {}; // abstract method
+    mousing(x, y, event) {}; // abstract method
     selected() { }
     deselected() { }
     click(x, y, event) { } // abstract method

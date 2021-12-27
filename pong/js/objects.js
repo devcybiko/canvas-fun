@@ -25,7 +25,7 @@ class LeftPaddle extends Paddle {
     constructor(name, color, x, y, w, h) {
         super(name, color, x, y, w, h);
     }
-    moving(x, y, event) {
+    mousing(x, y, event) {
         this.y = y;
         this.adjust();
     }
@@ -40,7 +40,7 @@ class RightPaddle extends Paddle {
     constructor(name, color, x, y, w, h) {
         super(name, color, x, y, w, h);
     }
-    moving(x, y, event) {
+    mousing(x, y, event) {
         this.y = y;
         this.adjust();
     }
@@ -57,8 +57,8 @@ class PongPlayfield extends Playfield {
         this.leftPaddle;
         this.rightPaddle;
     }
-    moving(x, y, event) {
-        this.leftPaddle.moving(x,y,event);
+    mousing(x, y, event) {
+        this.leftPaddle.mousing(x,y,event);
     }
     handleKeyDown(event) {
         let that = event.srcElement.playfield;
@@ -91,6 +91,6 @@ class Ball extends Paddle {
         // let collisions = this.playfield.collisions(this, this.x + this.dx, this.y + this.dy);
         let collisions = this.playfield.collisions(this, this.x + this.dx);
         if (collisions.length) this.dx = -this.dx;
-        this.playfield.rightPaddle.moving(this.x, this.y - this.h / 2);
+        this.playfield.rightPaddle.mousing(this.x, this.y - this.h / 2);
     }
 }
