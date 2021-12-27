@@ -13,4 +13,4 @@ playfield.add(right);
 playfield.add(ball);
 playfield.leftPaddle = left;
 playfield.rightPaddle = right;
-playfield.start(1);
+playfield.start(160);

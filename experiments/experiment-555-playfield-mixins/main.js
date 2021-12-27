@@ -1,4 +1,4 @@
-const playfield = new Playfield('#my_canvas');
+const playfield = new Background('#my_canvas');
 playfield.add(new Box("RED", "red", 0, 0, 100, 100));
 playfield.add(new Box("GREEN", "green", 100, 200, 50, 50));
 playfield.add(new Box("ORANGE", "orange", 200, 125, 50, 25));
