@@ -53,6 +53,7 @@ class TicTacToe extends PObject {
                 this._board.setCell(move.row, move.col, this._turn);
                 this._turn = this.HUMAN;
                 this._board.cancelLastMove();
+                this._msg.hide();
             } else {
                 this._msg("I have no moves", 1000);
             }
