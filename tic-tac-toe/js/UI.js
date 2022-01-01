@@ -42,3 +42,4 @@ class Message extends PObject {
         else this.toFront();
     }
 }
+

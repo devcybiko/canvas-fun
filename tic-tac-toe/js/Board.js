@@ -15,7 +15,7 @@ class Board extends PObject {
         return obj;
     }
     _init(args) {
-        args = Mixin.getArgs(arguments, {playfield:undefined});
+        args = Mixin.getArgs(arguments, {playfield:undefined, x: 0, y: 0});
         super._init(args.playfield, "board", "black", 0, 0, args.playfield.w, args.playfield.h);
         this.CELL_WIDTH = Math.floor(this.w / 3);
         this.CELL_HEIGHT = Math.floor(this.h / 3);

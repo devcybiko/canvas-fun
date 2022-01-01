@@ -185,6 +185,10 @@ class Playfield extends Mixin {
         }
         return results;
     }
+    reset() {
+        this._objs = [];
+        this.stop();
+    }
     click(x, y, event) {
         this.deselect();
     }

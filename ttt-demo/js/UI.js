@@ -10,16 +10,16 @@ class Message extends PObject {
         return obj;
     }
     _init(args) {
-        args = Mixin.getArgs(arguments, { playfield: undefined, msg: undefined, timeout: 3000 });
+        args = Mixin.getArgs(arguments, { playfield: undefined, msg: undefined, timeout: 3000, callback: null, context: null });
         super._init(args.playfield, "msg", "black", 
             args.playfield.w / 4, args.playfield.h / 2 - 12, args.playfield.w / 2, 24);
         if (args.msg) {
-            this.show(args.msg, args.timeout);
+            this.show(args.msg, args.timeout, args.callback, args.context);
         }
     }
-    show(msg, timeout = 1000) {
+    show(msg, timeout = 1000, callback, context) {
         this._msg = msg;
-        this.setTimer(timeout);
+        this.setTimer(timeout, callback, context);
         super.show();
     }
     hide() {
@@ -39,5 +39,32 @@ class Message extends PObject {
     go() {
         if (!this.getTimer() || !this._msg) this.hide();
         else this.toFront();
+    }
+}
+
+class Label extends PObject {
+    static {
+        this.mixin({ GraphicsMixin });
+        this.mixin({ LoggingMixin });
+    }
+    static factory(args) {
+        let obj = new this(null);
+        obj._init(...arguments);
+        Mixin.seal(obj);
+        return obj;
+    }
+    _init(args) {
+        args = Mixin.getArgs(arguments, { playfield: undefined, x: 0, y: 0, w: 0, h: 0});
+        super._init(args.playfield, "msg", "black", args.x, args.y, args.w, args.h);
+        this._text = "";
+    }
+    setText(text) {
+        this._text = text;
+        this.toFront();
+    }
+    draw(ctx) {
+        if (this._text) {
+            this.borderText(ctx, this._text, "black", "white", "black", this.x, this.y, this.w, this.h);
+        }
     }
 }
