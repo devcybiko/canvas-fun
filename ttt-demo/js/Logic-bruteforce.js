@@ -4,8 +4,8 @@ class Logic {
     ];
     static WIN = 3;
     static DRAW = 2
-    static NONE = 1;
-    static LOSS = 0;
+    static LOSS = 1;
+    static NONE = 0;
 
     constructor(board, rules) {
         this._board = board;
@@ -13,12 +13,12 @@ class Logic {
         this._moves = [];
     }
 
-    allAvailableMoves() {
+    allAvailableMoves(board) {
         let moves = [];
         for (let row in [0, 1, 2]) {
             for (let col in [0, 1, 2]) {
                 if (this._board.getCell(row, col) === Board.EMPTY)
-                    moves.push({ row, col, outcome: Logic.NONE });
+                    moves.push({ row, col, outcome: Logic.NONE, board });
             }
         }
         console.log("allAvailableMoves", moves);
@@ -41,27 +41,52 @@ class Logic {
         console.log("randomMove", move);
         return move;
     }
+    setLastOf(arr, value) {
+        if (arr.length) arr[arr.length-1].outcome = value;
+        return null;
+    }
+    minOutcome(moves) {
+        let min = 99;
+        for(let move of moves) {
+            if (move.outcome < min) min = move.outcome;
+        }
+        return min === 99 ? 0 : min;
+    }
+
+    percolate(outcome) {
+        this._moves.reverse();
+        console.log("percolate", this._moves);
+        for(let move of this._moves) {
+            move.outcome = outcome;
+            let siblings = Logic.memory[move.board];
+            outcome = this.minOutcome(siblings);
+        }
+    }
     memoryMove() {
         let currentBoard = this._board.getRow(0) + this._board.getRow(1) + this._board.getRow(2);
         let moves = Logic.memory[currentBoard];
         if (!moves) {
-            moves = this.allAvailableMoves();
+            moves = this.allAvailableMoves(currentBoard);
             Logic.memory[currentBoard] = moves;
         }
         let bestMove = null;
+        let bestMoves = [[],[],[],[]];
         for (let move of moves) {
-            if (!bestMove || bestMove.outcome < move.outcome) bestMove = move;
+            bestMoves[move.outcome].push(move);
         }
-        if (!bestMove) bestMove = this.randomMove();
-        else if (bestMove.outcome === Logic.LOSS) this.updateOutcome(Logic.LOSS);
+        console.log(bestMoves);
 
+        for(let options of [bestMoves[Logic.WIN],bestMoves[Logic.NONE],bestMoves[Logic.DRAW],bestMoves[Logic.LOSS]]) {
+            // if (options.length) bestMove = options[0];
+            if (options.length) bestMove = this.randomElement(options);
+            if (bestMove) break;
+        }
+        console.log({bestMove});
         this._moves.push(bestMove);
         return bestMove;
     }
     updateOutcome(outcome) {
         console.log("moves", this._moves);
-        let lastMove = this._moves[this._moves.length - 1];
-        if (lastMove && lastMove.outcome > outcome) lastMove.outcome = outcome;
-        console.log(lastMove);
+        this.percolate(outcome);
     }
 }

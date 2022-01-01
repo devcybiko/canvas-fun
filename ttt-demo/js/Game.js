@@ -5,6 +5,9 @@ class TicTacToe extends PObject {
         Mixin.seal(obj);
         return obj;
     }
+    static learn = false;
+    static _delay = 1000;
+
     _init(args) {
         args = Mixin.getArgs(arguments, { canvasId: undefined, tick: 125 });
         const playfield = Playfield.factory(args.canvasId);
@@ -26,13 +29,33 @@ class TicTacToe extends PObject {
         game.HUMAN = Board.X;
         game.COMPUTER = Board.O;
         game._turn = game.HUMAN;
-        game._msg = Message.factory(this._playfield, "Tic Tac Toe", 3000);
-        game._label = Label.factory(this._playfield, 0, this._playfield.h - 24, this._playfield.w, 24);
+        game._msg = Message.factory(this._playfield, "Tic Tac Toe", TicTacToe._delay);
+        game._label = Label.factory(this._playfield, 0, this._playfield.h - 24, this._playfield.w/2, 24);
+        game._learnButton = Button.factory(this._playfield, "LEARN!", this._playfield.w/4*2,  this._playfield.h - 24, this._playfield.w/4, 24, game._learn, game);
+        game._speedButton = Button.factory(this._playfield, "SPEED!", this._playfield.w/4*3,  this._playfield.h - 24, this._playfield.w/4, 24, game._speed, game);
         game._updateScore();
         game._playing = true;
         game._playfield.add(game);
         game._playfield.start(args.tick);
         game._updateScore();
+    }
+    _learn(game) {
+        TicTacToe.learn = !TicTacToe.learn;
+        console.log("LEARN!", TicTacToe.learn);
+    }
+    _speed(game) {
+        if (game._playfield._tick != 1) {
+            game._playfield.stop();
+            game._playfield._tick = 1;
+            TicTacToe._delay = 1;
+            game._playfield.start();
+        } else {
+            game._playfield.stop();
+            game._playfield._tick = 125;
+            TicTacToe._delay = 1000;
+            game._playfield.start();
+        }
+        console.log("SPEED!", TicTacToe.learn);
     }
     _updateScore() {
         this._label.setText(`X: ${this._xWins}          O: ${this._oWins}            Cat: ${this._catWins}`);
@@ -40,41 +63,44 @@ class TicTacToe extends PObject {
     go() {
         if (!this._playing) return;
         if (this._rules.checkWin(Board.X)) {
-            this._msg.show("X Wins!", 1000, this._reset, this);
+            this._msg.show("X Wins!", TicTacToe._delay, this._reset, this);
             this._logic.updateOutcome(Logic.LOSS);
             this._playing = false;
             this._xWins++;
             return;
         }
         if (this._rules.checkWin(Board.O)) {
-            this._msg.show("O Wins!", 1000, this._reset, this);
-            this._logic.updateOutcome(Logic.WIN);
+            this._msg.show("O Wins!", TicTacToe._delay, this._reset, this);
+            this._logic.updateOutcome(Logic.LOSS);
             this._playing = false;
             this._oWins++;
             return;
         }
         if (this._rules.checkDraw()) {
-            this._msg.show("IT'S THE CAT'S GAME!", 1000, this._reset, this);
+            this._msg.show("IT'S THE CAT'S GAME!", TicTacToe._delay, this._reset, this);
             this._logic.updateOutcome(Logic.DRAW);
             this._playing = false;
             this._catWins++;
             return;
         }
-        let lastMove = this._board.getLastMove();
         if (this._turn === this.HUMAN) {
+            let lastMove = this._board.getLastMove();
+            if (TicTacToe.learn) {
+                lastMove = this._logic.memoryMove(this.COMPUTER, this.HUMAN);
+            }
             if (lastMove) {
                 if (this._rules.checkMove(lastMove.row, lastMove.col, this._turn)) {
                     let x = X.factory(this._board, lastMove.row, lastMove.col);
                     this._board.setCell(lastMove.row, lastMove.col, this._turn);
                     this._turn = this.COMPUTER;
-                    this.setTimer(125);
+                    this.setTimer(TicTacToe._delay);
                 } else {
-                    this._msg.show("Illegal Move. Try Again.", 1000);
+                    this._msg.show("Illegal Move. Try Again.", TicTacToe._delay);
                 }
                 this._board.cancelLastMove();
             }
         } else {
-            this._msg.show("Thinking...", 1);
+            this._msg.show("Thinking...", TicTacToe._delay);
             if (this.getTimer()) return;
             console.log();
             let move = this._logic.memoryMove(this.COMPUTER, this.HUMAN);
@@ -85,7 +111,7 @@ class TicTacToe extends PObject {
                 this._board.cancelLastMove();
                 this._msg.hide();
             } else {
-                this._msg.show("I have no moves", 1000);
+                this._msg.show("I have no moves", TicTacToe._delay);
             }
         }
     }

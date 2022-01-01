@@ -68,3 +68,36 @@ class Label extends PObject {
         }
     }
 }
+
+class Button extends PObject {
+    static {
+        this.mixin({ GraphicsMixin });
+        this.mixin({ LoggingMixin });
+    }
+    static factory(args) {
+        let obj = new this(null);
+        obj._init(...arguments);
+        Mixin.seal(obj);
+        return obj;
+    }
+    _init(args) {
+        args = Mixin.getArgs(arguments, { playfield: undefined, text: "", x:0, y: 0, w: 0, h: 0, callback:undefined, context:undefined});
+        super._init(args.playfield, "msg", "black", args.x, args.y, args.w, args.h);
+        this._text = args.text;
+        this._callback = args.callback;
+        this._context = args.context;
+    }
+    setText(text) {
+        this._text = text;
+        this.toFront();
+    }
+    draw(ctx) {
+        if (this._text) {
+            this.borderText(ctx, this._text, "black", "white", "black", this.x, this.y, this.w, this.h);
+        }
+    }
+    click(x,y) {
+        this._callback(this._context);
+    }
+
+}
