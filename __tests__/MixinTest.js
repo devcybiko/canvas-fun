@@ -1,6 +1,26 @@
-"use strict";
 
 const Mixin = require("../js/Mixin.js");
+
+const BadMixin = {
+    cat() {
+        return this.a + this.b;
+    }
+}
+const GoodMixin = {
+    GoodMixin() {
+    },
+    cat() {
+        return "GoodMixin: " + this.a + this.b;
+    }
+}
+const GoodMixin2 = {
+    GoodMixin2() {
+    },
+    cat() {
+        return "GoodMixin2: " + this.a + this.b;
+    }
+}
+
 class Foo extends Mixin {
     log() {
         console.log(this.a, this.b);
@@ -10,16 +30,21 @@ class Baz {
     constructor() {
     }
 }
+
 class Bar extends Mixin {
-    _init(a, b) {
-        this.a = a;
-        this.b = b;
+    _init() {
+        let args = Mixin.getArgs(arguments, { a: "A", b: "B" });
+        this.a = args.a;
+        this.b = args.b;
     }
     log() {
         console.log(this.a, this.b);
     }
 }
 class Bizzle extends Mixin {
+    static {
+        this.mixin({ GoodMixin });
+    }
     _init() {
         let args = Mixin.getArgs(arguments, { baz: Baz, a: String, b: "optional" });
         Object.assign(this, args);
@@ -29,17 +54,17 @@ class Bizzle extends Mixin {
 
 describe("Mixin", () => {
     beforeAll(() => {
-        console.log("beforeAll executes once before all tests");
+        // console.log("beforeAll executes once before all tests");
         // calc.add.mockImplementation( () => -1 );
     });
 
     afterAll(() => {
-        console.log("afterAll executes once after all tests");
+        // console.log("afterAll executes once after all tests");
     });
 
     describe("constructor", () => {
         beforeEach(() => {
-            console.log("beforeEach executes before every test");
+            // console.log("beforeEach executes before every test");
         });
 
         it("should throw an exception when calling empty constructor", () => {
@@ -53,7 +78,6 @@ describe("Mixin", () => {
             }).toThrowError("USE THE FACTORY METHOD");
         });
     });
-
     describe("factory", () => {
         it("should throw an exception when missing _init() method", () => {
             expect(() => {
@@ -65,9 +89,14 @@ describe("Mixin", () => {
                 let foo = Foo.factory();
             }).toThrowError("Mixin classes need an _init() method");
         });
-        it("should call the _init() method", () => {
+        it("should call the _init() method and allow getter", () => {
             let bar = Bar.factory("A", "B");
             expect(bar.a).toBe("A");
+        });
+        it("should allow setter ", () => {
+            let bar = Bar.factory("A", "B");
+            bar.a = "ALPHA";
+            expect(bar.a).toBe("ALPHA");
         });
         it("should seal the object for 'read'", () => {
             let bar = Bar.factory("A", "B");
@@ -131,6 +160,62 @@ describe("Mixin", () => {
                 let bizzle = Bizzle.factory({ baz });
             }).toThrowError("Required parameter #2 'a' of type 'String' was not supplied");
         });
+        it("should Mixin.getArgs extra arguments should be captured", () => {
+            expect(() => {
+                let baz = new Baz();
+                let bizzle = Bizzle.factory({ baz, frodo: "hobbit" });
+            }).toThrowError("Argument list has unexpected parameter: frodo");
+        });
+    });
+    describe("Mixin.getArgs", () => {
+        it("should require an init method", () => {
+            expect(() => {
+                class BadBar extends Mixin {
+                    static {
+                        this.mixin({ BadMixin });
+                    }
+                    _init(a, b) {
+                        this.a = a;
+                        this.b = b;
+                    }
+                    log() {
+                        console.log(this.a, this.b);
+                    }
+                }
+            }).toThrowError("ERROR - {BadMixin} - should have a init function 'BadMixin()'");
+        });
+        it("should allow multiple mixins", () => {
+            class GoodBar extends Mixin {
+                static {
+                    this.mixin({ GoodMixin, GoodMixin2 }, true);
+                }
+                _init(a, b) {
+                    this.a = a;
+                    this.b = b;
+                }
+                log() {
+                    console.log(this.a, this.b);
+                }
+            }
+            let bar = GoodBar.factory("a", "b");
+            expect(bar.cat()).toBe("GoodMixin2: ab");
+        });
+        it("should detect overloading mixed in functions", () => {
+            expect(() => {
+                class BadBar extends Mixin {
+                    static {
+                        this.mixin({ GoodMixin, GoodMixin2 });
+                    }
+                    _init(a, b) {
+                        this.a = a;
+                        this.b = b;
+                    }
+                    log() {
+                        console.log(this.a, this.b);
+                    }
+                }
+            }).toThrowError("ERROR - {GoodMixin2} - already has a method 'cat()'
+            ");
+        });
     });
 });
-

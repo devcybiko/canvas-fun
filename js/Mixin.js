@@ -21,13 +21,13 @@ class Mixin {
             return Reflect.set(target, name, value);
         }
     };
-    static constructorProxy = {
-        construct: function (target, args) {
-            let obj = new target(...args);
-            obj._sealed_ = true;
-            return new Proxy(obj, Mixin.accessorProxy);
-        }
-    };
+    // static constructorProxy = {
+    //     construct: function (target, args) {
+    //         let obj = new target(...args);
+    //         obj._sealed_ = true;
+    //         return new Proxy(obj, Mixin.accessorProxy);
+    //     }
+    // };
     static _assignArgument(newargs, i, name, arg, defaultValue) {
         // overlay the positional parameters on the default values
         let t2 = defaultValue.prototype ? defaultValue.prototype.constructor.name : defaultValue.constructor.name;
@@ -86,33 +86,29 @@ class Mixin {
         let proxy = new Proxy(obj, Mixin.accessorProxy);
         return proxy;
     }
-    static varToString(varObj) {
-        if (typeof varObj !== "object") throw new Error("ERROR - Mixin should be a Dict of functions - {Name}");
-        let name = Object.keys(varObj)[0];
-        if (typeof name !== "string") throw new Error("ERROR - Mixin should be a Dict of functions - {Name}");
-        let dict = varObj[name];
-        if (typeof dict !== "object") throw new Error("ERROR - Mixin should be a Dict of functions - {" + name + "}");
-        let fn = dict[name];
-        if (typeof fn !== "function") throw new Error("ERROR - {" + name + "} - should have a init function '" + name + "(obj)'");
-        return name;
-    }
-    static mixin(_mixer) {
-        let name = this.varToString(_mixer);
-        let functions = _mixer[name];
+    static mixin(_mixers, force = false) {
         this._initializers = this._initializers || [];
-        this._initializers.push(functions[name]);
-        Object.assign(this.prototype, functions);
-    }
-    _mixin_() {
-        let initializers = this._initializers || [];
-        for (let initializer of initializers) {
-            initializer.bind(this);
-            initializer(this);
+        for(let name of Object.keys(_mixers)) {
+            let functions = _mixers[name];
+            for(let fnName of Object.keys(functions)) {
+                if (this.prototype[fnName] && !force) throw new Error("ERROR - {" + name + "} - already has a method '" + fnName + "()'");
+            }
+            let initializer = functions[name];
+            if (typeof initializer !== "function") throw new Error("ERROR - {" + name + "} - should have a init function '" + name + "()'");
+            this._initializers.push(initializer);
+            Object.assign(this.prototype, functions);
         }
     }
-    _checkArgs_(args, msg) {
-        if (!args._args_) throw Error(msg || "BAD ARGS: These args should pass through 'Mixin.getArgs()'");
+    _mixin_() {
+        let initializers = this.constructor._initializers || [];
+        for (let initializer of initializers) {
+            initializer.bind(this);
+            initializer();
+        }
     }
+    // _checkArgs_(args, msg) {
+    //     if (!args._args_) throw Error(msg || "BAD ARGS: These args should pass through 'Mixin.getArgs()'");
+    // }
 }
 
 if (module) {
