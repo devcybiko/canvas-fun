@@ -214,8 +214,7 @@ describe("Mixin", () => {
                         console.log(this.a, this.b);
                     }
                 }
-            }).toThrowError("ERROR - {GoodMixin2} - already has a method 'cat()'
-            ");
+            }).toThrowError("ERROR - {GoodMixin2} - already has a method 'cat()'");
         });
     });
 });
