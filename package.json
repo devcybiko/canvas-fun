@@ -6,7 +6,7 @@
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
-    "test": "jest"
+    "test": "jest __tests__"
   },
   "repository": {
     "type": "git",
