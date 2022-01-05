@@ -1,6 +1,6 @@
 class Playfield extends Mixin {
     _init(args) {
-        args = Mixin.getArgs(arguments, {canvasId:undefined});
+        args = Mixin.getArgs(arguments, {canvasId:String});
         this._canvas = document.querySelector(args.canvasId);
         if (!this._canvas) {
             this._canvas = document.querySelector("#" + args.canvasId);
@@ -192,14 +192,8 @@ class Playfield extends Mixin {
 }
 
 class PObject extends Mixin {
-    static factory(args) {
-        let obj = new this(null);
-        obj._init(...arguments);
-        Mixin.seal(obj);
-        return obj;
-    }
     _defaults = {
-        playfield:undefined,
+        playfield:Playfield,
         name: "",
         color: "black",
         x: 0,

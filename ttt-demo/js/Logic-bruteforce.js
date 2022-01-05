@@ -15,8 +15,8 @@ class Logic {
 
     allAvailableMoves(board) {
         let moves = [];
-        for (let row in [0, 1, 2]) {
-            for (let col in [0, 1, 2]) {
+        for (let row of [0, 1, 2]) {
+            for (let col of [0, 1, 2]) {
                 if (this._board.getCell(row, col) === Board.EMPTY)
                     moves.push({ row, col, outcome: Logic.NONE, board });
             }

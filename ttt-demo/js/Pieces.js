@@ -3,12 +3,6 @@ class Piece extends PObject {
         this.mixin({ GraphicsMixin });
         this.mixin({ LoggingMixin });
     }
-    static factory(args) {
-        let obj = new this(null);
-        obj._init(...arguments);
-        Mixin.seal(obj);
-        return obj;
-    }
     _init(args) {
         args = Mixin.getArgs(arguments, {board:undefined, row:undefined, col:undefined});
         super._init(args.board._playfield, "", "black", 0, 0, args.board.CELL_HEIGHT, args.board.CELL_WIDTH);
@@ -32,14 +26,8 @@ class X extends PObject {
         this.mixin({ GraphicsMixin });
         this.mixin({ LoggingMixin });
     }
-    static factory(args) {
-        let obj = new this(null);
-        obj._init(...arguments);
-        Mixin.seal(obj);
-        return obj;
-    }
     _init(args) {
-        args = Mixin.getArgs(arguments, {board:undefined, row:undefined, col:undefined});
+        args = Mixin.getArgs(arguments, {board:Board, row:0, col:0});
         super._init(args.board._playfield, "", "black", 0, 0, args.board.CELL_HEIGHT, args.board.CELL_WIDTH);
         this._board = args.board;
         this.move(args.row, args.col);
@@ -61,14 +49,8 @@ class O extends PObject {
         this.mixin({ GraphicsMixin });
         this.mixin({ LoggingMixin });
     }
-    static factory(args) {
-        let obj = new this(null);
-        obj._init(...arguments);
-        Mixin.seal(obj);
-        return obj;
-    }
     _init(args) {
-        args = Mixin.getArgs(arguments, {board:undefined, row:undefined, col:undefined});
+        args = Mixin.getArgs(arguments, {board:Board, row:0, col:0});
         super._init(args.board._playfield, "", "black", 0, 0, args.board.CELL_HEIGHT, args.board.CELL_WIDTH);
         this._board = args.board;
         this.move(args.row, args.col);

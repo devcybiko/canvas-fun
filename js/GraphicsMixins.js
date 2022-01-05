@@ -1,6 +1,5 @@
 const GraphicsMixin = {
-    GraphicsMixin(obj) {
-        obj.foo = "FOO";
+    GraphicsMixin() {
     },
     box(ctx, color, x, y, w, h) {
         ctx.fillStyle = color;
@@ -41,8 +40,7 @@ const GraphicsMixin = {
 }
 
 const LoggingMixin = {
-    LoggingMixin(obj) {
-        obj.foo = "BAR";
+    LoggingMixin() {
     },
     log(msg) {
         console.log("LoggingMixin::log", this.foo, msg);

@@ -1,15 +1,9 @@
 class TicTacToe extends PObject {
-    static factory(args) {
-        let obj = new this(null);
-        obj._init(...arguments);
-        Mixin.seal(obj);
-        return obj;
-    }
     static learn = false;
     static _delay = 1000;
 
     _init(args) {
-        args = Mixin.getArgs(arguments, { canvasId: undefined, tick: 125 });
+        args = Mixin.getArgs(arguments, { canvasId: String, tick: 125 });
         const playfield = Playfield.factory(args.canvasId);
         super._init(playfield);
         this._args = args;

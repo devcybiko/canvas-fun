@@ -3,14 +3,10 @@ class Message extends PObject {
         this.mixin({ GraphicsMixin });
         this.mixin({ LoggingMixin });
     }
-    static factory(args) {
-        let obj = new this(null);
-        obj._init(...arguments);
-        Mixin.seal(obj);
-        return obj;
+    _callback(ctx) {
     }
     _init(args) {
-        args = Mixin.getArgs(arguments, { playfield: undefined, msg: undefined, timeout: 3000, callback: null, context: null });
+        args = Mixin.getArgs(arguments, { playfield: Playfield, msg: String, timeout: 3000, callback: Lambda, context: {} });
         super._init(args.playfield, "msg", "black", 
             args.playfield.w / 4, args.playfield.h / 2 - 12, args.playfield.w / 2, 24);
         if (args.msg) {
@@ -47,14 +43,8 @@ class Label extends PObject {
         this.mixin({ GraphicsMixin });
         this.mixin({ LoggingMixin });
     }
-    static factory(args) {
-        let obj = new this(null);
-        obj._init(...arguments);
-        Mixin.seal(obj);
-        return obj;
-    }
     _init(args) {
-        args = Mixin.getArgs(arguments, { playfield: undefined, x: 0, y: 0, w: 0, h: 0});
+        args = Mixin.getArgs(arguments, { playfield: Playfield, x: 0, y: 0, w: 0, h: 0});
         super._init(args.playfield, "msg", "black", args.x, args.y, args.w, args.h);
         this._text = "";
     }
@@ -74,14 +64,8 @@ class Button extends PObject {
         this.mixin({ GraphicsMixin });
         this.mixin({ LoggingMixin });
     }
-    static factory(args) {
-        let obj = new this(null);
-        obj._init(...arguments);
-        Mixin.seal(obj);
-        return obj;
-    }
     _init(args) {
-        args = Mixin.getArgs(arguments, { playfield: undefined, text: "", x:0, y: 0, w: 0, h: 0, callback:undefined, context:undefined});
+        args = Mixin.getArgs(arguments, { playfield: Playfield, text: "", x:0, y: 0, w: 0, h: 0, callback:Lambda, context:{}});
         super._init(args.playfield, "msg", "black", args.x, args.y, args.w, args.h);
         this._text = args.text;
         this._callback = args.callback;

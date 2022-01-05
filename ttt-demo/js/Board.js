@@ -8,14 +8,8 @@ class Board extends PObject {
     static O = "O";
     static EMPTY = ".";
 
-    static factory(args) {
-        let obj = new this(null);
-        obj._init(...arguments);
-        Mixin.seal(obj);
-        return obj;
-    }
     _init(args) {
-        args = Mixin.getArgs(arguments, {playfield:undefined, x: 0, y: 0, w: 0, h: 0});
+        args = Mixin.getArgs(arguments, {playfield:Playfield, x: 0, y: 0, w: 0, h: 0});
         super._init(args.playfield, "board", "black", args.x, args.y, args.w || args.playfield.w, args.h || args.playfield.h);
         this.CELL_WIDTH = Math.floor(this.w / 3);
         this.CELL_HEIGHT = Math.floor(this.h / 3);

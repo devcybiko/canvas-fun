@@ -1,6 +1,4 @@
-
 const Mixin = require("../js/Mixin.js");
-
 const BadMixin = {
     cat() {
         return this.a + this.b;
@@ -132,7 +130,7 @@ describe("Mixin", () => {
             expect(() => {
                 let baz = new Baz();
                 let bizzle = Bizzle.factory(baz, "A", 0);
-            }).toThrowError("Named parameter 'b=0' of type 'Number' was expected to be of type 'String'");
+            }).toThrowError("Positional parameter #3 'b=0' of type Number did not match default value 'optional' of type String");
         });
         it("should Mixin.getArgs with missing args", () => {
             expect(() => {
