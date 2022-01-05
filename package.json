@@ -1,0 +1,21 @@
+{
+  "name": "canvas-fun",
+  "version": "1.0.0",
+  "description": "<html> <body> <canvas height=\"256\" width=\"256\" id=\"my_canvas\" style=\"border: 1px solid black\"> <script src=\"canvas-fun.js\"></script> </body> </html>",
+  "main": "test.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devcybiko/canvas-fun.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/devcybiko/canvas-fun/issues"
+  },
+  "homepage": "https://github.com/devcybiko/canvas-fun#readme"
+}
