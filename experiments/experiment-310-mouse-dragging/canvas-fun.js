@@ -42,8 +42,8 @@ function handleMouseEvent(event) {
     if (event.type === "mouseup") drag = false;
     if (event.type === "mousedown") drag = true;
     if (drag) {
-        x = event.offsetX - 50;
-        y = event.offsetY - 50;
+        x = event.offsetX;
+        y = event.offsetY;
         redraw();
     }
 }

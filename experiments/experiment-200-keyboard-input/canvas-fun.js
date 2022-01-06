@@ -12,3 +12,5 @@ function handleKeyDown(event) {
     i = i + 10;
 }
 
+ctx.strokeStyle = "black";
+ctx.strokeRect(0,0,canvas.width,canvas.height);

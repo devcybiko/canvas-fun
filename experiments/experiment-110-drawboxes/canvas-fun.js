@@ -5,3 +5,5 @@ ctx.fillRect(10, 10, 100, 100);
 ctx.fillStyle = 'red';
 ctx.fillRect(30, 30, 100, 100);
 
+ctx.strokeStyle = "black";
+ctx.strokeRect(0,0,canvas.width,canvas.height);
