@@ -8,14 +8,27 @@ let color = "red";
 let x = 0;
 let y = 0;
 
-redraw();
 
+let trail = 8;
+let old = [];
+
+redraw();
 function redraw() {
+    old.push({x,y});
+    if (old.length > trail) old = old.slice(-trail)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = color;
-    ctx.strokeStyle = 'black';
-    ctx.fillRect(x, y, 100, 100);
-    ctx.strokeRect(x, y, 100, 100);
+    let frac = 1/old.length;
+    let i = 1;
+    for(let posn of old) {
+        let opaque = frac * i;
+        console.log(opaque);
+        ctx.globalAlpha = opaque;
+        ctx.fillStyle = color;
+        ctx.strokeStyle = 'black';
+        ctx.fillRect(posn.x, posn.y, 100, 100);
+        if (i === old.length) ctx.strokeRect(posn.x, posn.y, 100, 100);
+        i++;   
+    }
 }
 
 function handleKeyEvent(event) {
@@ -36,8 +49,8 @@ function handleKeyEvent(event) {
 
 function handleMouseEvent(event) {
     console.log({event});
-    x = event.offsetX ;
-    y = event.offsetY;
+    x = event.offsetX - 50;
+    y = event.offsetY - 50;
     redraw();
 }
 
