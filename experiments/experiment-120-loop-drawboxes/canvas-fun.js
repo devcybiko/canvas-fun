@@ -6,6 +6,3 @@ for(let i=0; i<250; i+=10) {
     ctx.fillRect(i, i, 100, 100);
     ctx.strokeRect(i, i, 100, 100);
 }
-
-ctx.strokeStyle = "black";
-ctx.strokeRect(0,0,canvas.width,canvas.height);
