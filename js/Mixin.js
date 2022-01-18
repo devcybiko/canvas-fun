@@ -4,7 +4,7 @@ class Lambda {
 class Mixin {
     constructor(args) {
         if (args !== null) throw Error("USE THE FACTORY METHOD");
-        this._mixin_();
+        this._init_();
     }
     static factory(args) {
         let clazz = this;
@@ -84,7 +84,7 @@ class Mixin {
             Object.assign(this.prototype, _mixers[name]);
         }
     }
-    _mixin_() {
+    _init_() {
         for (let initializer of  this.constructor._initializers || []) {
             initializer.bind(this);
             initializer();
