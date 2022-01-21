@@ -1,5 +1,5 @@
 function _log(msg) {
-    console.log(msg);
+    console.log(...arguments);
 }
 function _error(msg) {
     console.error(msg);
