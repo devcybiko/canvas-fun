@@ -1,6 +1,6 @@
 const canvas = document.querySelector('#my_canvas');
-document.addEventListener("keydown", handleKeyDown);
 const ctx = canvas.getContext('2d');
+window.addEventListener("keydown", handleKeyDown.bind(ctx));
 
 let color = "black";
 let x = 0;
@@ -9,7 +9,7 @@ let y = 0;
 handleKeyDown({});
 
 function handleKeyDown(event) {
-    console.log(event.key);
+    console.log(event);
     if (event.key === 'r') color = 'red';
     if (event.key === 'o') color = 'orange';
     if (event.key === 'y') color = 'yellow';
@@ -22,10 +22,10 @@ function handleKeyDown(event) {
     if (event.key === 'ArrowLeft') x += -10;
     if (event.key === 'ArrowRight') x += 10;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = color;
-    ctx.strokeStyle = 'black';
-    ctx.fillRect(x, y, 100, 100);
-    ctx.strokeRect(x, y, 100, 100);
+    this.clearRect(0, 0, canvas.width, canvas.height);
+    this.fillStyle = color;
+    this.strokeStyle = 'black';
+    this.fillRect(x, y, 100, 100);
+    this.strokeRect(x, y, 100, 100);
 }
 
