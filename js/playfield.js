@@ -1,82 +1,75 @@
+/**
+ * NOTE: need to change "mousing", "dragging", etc... to "onMouseMove", "onDrag", etc...
+ * NOTE: need to change ""
+ */
+
 class Playfield extends Mixin {
     _init(args) {
         args = Mixin.getArgs(arguments, {canvasId:String});
-        this._canvas = document.querySelector(args.canvasId);
-        if (!this._canvas) {
-            this._canvas = document.querySelector("#" + args.canvasId);
-            if (!this._canvas) throw Error(`Could not find Canvas='${args.canvasId}' in DOM`);
-        }
+        this._canvas = document.querySelector(args.canvasId) || document.querySelector("#" + args.canvasId);
+        if (!this._canvas) throw Error(`Could not find Canvas='${args.canvasId}' in DOM`);
         this._ctx = this._canvas.getContext('2d');
         this._objs = [];
-        this._canvas._playfield = this;
         this._x = 0;
         this._y = 0;
         this._w = this._canvas.width;
         this._h = this._canvas.height;
         this._selectedObj = null;
-        this._canvas.addEventListener('mousedown', this.__handleMouseDown);
-        this._canvas.addEventListener('mousemove', this.__handleMouseMove);
-        this._canvas.addEventListener('mouseup', this.__handleMouseUp);
+        this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));
+        this._canvas.addEventListener('mousemove', this._handleMouseMove.bind(this));
+        this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));
+        document.addEventListener("keydown", this._handleKeyDown.bind(this));
         this._dragObj = null;
         this._dragDX = null;
         this._dragDY = null;
-        this._body = document.querySelector('body');
-        this._body._playfield = this;
-        document.addEventListener("keydown", this.__handleKeyDown);
         this._timerId = null;
     }
-    __handleMouseDown(event) {
-        return (event.srcElement._playfield._handleMouseDown(event));
-    }
-    __handleMouseUp(event) {
-        return (event.srcElement._playfield._handleMouseUp(event));
-    }
-    __handleMouseMove(event) {
-        return (event.srcElement._playfield._handleMouseMove(event));
-    }
-    __handleKeyDown(event) {
-        return (event.srcElement._playfield._handleKeyDown(event));
-    }
     _findObjInBounds(x, y) {
-        for (let i = this._objs.length - 1; i >= 0; i--) {
-            let obj = this._objs[i];
+        for (let obj of this._objs) {
             if (obj.inBounds(x, y)) return obj
         }
         return null;
     }
     _handleKeyDown(event) {
         let stopProcessing = false
-        for (let i = this._objs.length - 1; i >= 0; i--) {
-            let obj = this._objs[i];
-            stopProcessing = obj.keydown(event.key, event);
+        for (let obj of this._objs) {
+            stopProcessing = obj.onKeyDown(event.key, event);
             if (stopProcessing) break;
         }
         if (!stopProcessing) {
-            this.keydown(event.key, event);
+            this.onKeyDown(event.key, event);
         }
     }
     _handleMouseDown(event) {
         let stopProcessing = false;
-        for (let i = this._objs.length - 1; i >= 0; i--) {
-            let obj = this._objs[i];
+        for (let obj of this._objs) {
             if (!obj.inBounds(event.offsetX, event.offsetY)) continue;
-            stopProcessing = obj.click(event.offsetX - obj._x, event.offsetY - obj._y, event);
+            stopProcessing = obj.onClick(event.offsetX - obj.x, event.offsetY - obj.y, event);
             if (stopProcessing) break;
         }
         if (!stopProcessing) {
-            this.click(event.offsetX, event.offsetY, event);
+            this.onClick(event.offsetX, event.offsetY, event);
         }
     }
     _handleMouseUp(event) {
-        this.dragStop();
+        this._dragStop();
     }
     _handleMouseMove(event) {
-        this._dragging(event.offsetX - this._dragDX, event.offsetY - this._dragDY, event);
-        this._mousing(event.offsetX - this._dragDX, event.offsetY - this._dragDY, event);
+        this._onDrag(event.offsetX - this._dragDX, event.offsetY - this._dragDY, event);
+        this._onMove(event.offsetX - this._dragDX, event.offsetY - this._dragDY, event);
     }
-    _dragging(x, y) {
-        if (this._dragObj) {
-            this._dragObj.dragging(x, y);
+    _onDrag(x, y) {
+        if (this._dragObj) this._dragObj.onDrag(x, y);
+    }
+    _onMove(x, y, event) {
+        let stopProcessing = false;
+        for (let obj of this._objs) {
+            if (!obj.inBounds(event.offsetX, event.offsetY)) continue;
+            stopProcessing = obj.onHover(event.offsetX - obj._x, event.offsetY - obj._y, event);
+            if (stopProcessing) break;
+        }
+        if (!stopProcessing) {
+            this.onHover(event.offsetX, event.offsetY, event);
         }
     }
     _timer(playfield) {
@@ -89,18 +82,6 @@ class Playfield extends Mixin {
             obj.go();
         }
     }
-    _mousing(x, y, event) {
-        let stopProcessing = false;
-        for (let i = this._objs.length - 1; i >= 0; i--) {
-            let obj = this._objs[i];
-            if (!obj.inBounds(event.offsetX, event.offsetY)) continue;
-            stopProcessing = obj.mousing(event.offsetX - obj._x, event.offsetY - obj._y, event);
-            if (stopProcessing) break;
-        }
-        if (!stopProcessing) {
-            this.mousing(event.offsetX, event.offsetY, event);
-        }
-    }
 
     get x() {return this._x;}
     get y() {return this._y;}
@@ -109,41 +90,43 @@ class Playfield extends Mixin {
 
     add(obj) {
         obj._playfield = this;
-        this._objs.push(obj);
+        this._objs.splice(0, 0, obj);
     }
     redraw() {
         this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-        for (let obj of this._objs) {
+        for (let i=this._objs.length - 1; i>=0; i--) {
+            let obj = this._objs[i];
             if (obj.isVisible) obj.draw(this._ctx);
         }
     }
-    dragStart(obj, event) {
-        let dx = obj._x;
-        let dy = obj._y;
+    _dragStart(obj, event) {
+        let dx = obj.x;
+        let dy = obj.y;
         if (event) {
             dx = event.offsetX;
             dy = event.offsetY;
         }
         this._dragStop();
         this._dragObj = obj;
-        this._dragDX = dx - obj._x;
-        this._dragDY = dy - obj._y;
-        this._dragObj.dragStarted();
+        this._dragDX = dx - obj.x;
+        this._dragDY = dy - obj.y;
+        this._dragObj.onDragStart();
     }
-    dragStop() {
+    _dragStop() {
         if (this._dragObj) {
-            this._dragObj.dragStopped();
+            this._dragObj.onDragStop();
             this._dragObj = null;
         }
     }
     select(obj) {
-        if (this._selectedObj) this._selectedObj.deselected();
-        this._selectedObj = obj;
-        this._selectedObj.selected();
-    }
-    deselect() {
-        if (this._selectedObj) this._selectedObj.deselected();
-        this._selectedObj = null;
+        if (obj) {
+            if (this._selectedObj) this._selectedObj.select(false);
+            this._selectedObj = obj;
+            this._selectedObj.select(true);    
+        } else {
+            if (this._selectedObj) this._selectedObj.select(false);
+            this._selectedObj = null;    
+        }
     }
     toFront(obj) {
         let i = this._objs.indexOf(obj);
@@ -159,15 +142,16 @@ class Playfield extends Mixin {
     }
     start(tick=125) {
         this.redraw();
-        this._timerId = setInterval(this._timer, tick, this);
+        this._timerId = setInterval(this._timer.bind(this), tick);
     }
     stop() {
         if (this._timerId) {
             clearInterval(this._timerId);
             this.redraw();
         }
+        this._timerId = 0;
     }
-    collisions(theObj, x = theObj._x, y = theObj._y, w = theObj.w, h = theObj.h) {
+    collisions(theObj, x = theObj.x, y = theObj.y, w = theObj.w, h = theObj.h) {
         let results = [];
         for (let obj of this._objs) {
             if (theObj === obj) continue;
@@ -183,12 +167,11 @@ class Playfield extends Mixin {
         this._objs = [];
         this.stop();
     }
-    click(x, y, event) {
-        this.deselect();
+    onClick(x, y, event) {
+        this.select(null);
     }
-    keydown(key, event) {
+    onKeyDown(key, event) {
     }
-    mousing(x, y, event) {} // abstract method
 }
 
 class PObject extends Mixin {
@@ -252,24 +235,21 @@ class PObject extends Mixin {
         if (this._callback) this._callback(this._context)
         return 0;
     }
-    dragging(x, y, event) {
+    onDrag(x, y, event) {
         move(x,y);
     }
     move(x, y) {
         this._x = x;
         this._y = y;
     }
-    selected() { 
-        this._isSelected = true;
+    onSelect(on_off) { 
+        this._isSelected = on_off;
     }
-    deselected() { 
-        this._isSelected = false;
-    }
-    mousing(x, y, event) {}; // abstract method
-    click(x, y, event) { } // abstract method
-    dragStarted() { } // abstract method
-    dragStopped() { } // abstract method
+    onMouse(x, y, event) {}; // abstract method
+    onClick(x, y, event) { } // abstract method
+    onDragStart() { } // abstract method
+    onDragStop() { } // abstract method
+    onTick() { } // abstract method
+    onKey(key, event) { } // abstract method
     draw(ctx) { } // abstract method
-    go() { } // abstract method
-    keydown(key, event) { } // abstract method
 }

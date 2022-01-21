@@ -1,8 +1,8 @@
 const canvas = document.querySelector('#my_canvas');
 document.addEventListener("keydown", handleKeyEvent);
-document.addEventListener('mousemove', handleMouseEvent);
-document.addEventListener('mouseup', handleMouseEvent);
-document.addEventListener('mousedown', handleMouseEvent);
+canvas.addEventListener('mousemove', handleMouseEvent);
+canvas.addEventListener('mouseup', handleMouseEvent);
+canvas.addEventListener('mousedown', handleMouseEvent);
 
 const ctx = canvas.getContext('2d');
 

@@ -1,4 +1,8 @@
 if (typeof module !== 'undefined')  var {_log,_error,_between,_random,_classOf,_classesOf,_instanceOf,_isClass} = require('../js/utils.js');
+/**
+ * Object.preventExtensions(object1);
+ */
+
 class Lambda {
 }
 class Mixin {
