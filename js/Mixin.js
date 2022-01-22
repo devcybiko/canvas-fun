@@ -79,6 +79,7 @@ class Mixin {
     static mixin(_mixers, force = false) {
         this._initializers = this._initializers || [];
         for(let name of Object.keys(_mixers)) {
+            if (this.prototype[name]) continue; // we've already mixed this one in
             for(let fnName of Object.keys(_mixers[name])) {
                 if (this.prototype[fnName] && !force) throw new Error("ERROR - {" + name + "} - already has a method '" + fnName + "()'");
             }
@@ -90,8 +91,8 @@ class Mixin {
     }
     _init_() {
         for (let initializer of  this.constructor._initializers || []) {
-            initializer.bind(this);
-            initializer();
+            let init = initializer.bind(this);
+            init();
         }
     }
 }

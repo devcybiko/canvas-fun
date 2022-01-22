@@ -3,13 +3,50 @@
  * NOTE: need to change ""
  */
 
+Node = {
+    Node() {
+        this._parent = null;
+        this._children = [];
+    },
+    getParent() { return this._parent; },
+    addChild(child, n) {
+        if (child) {
+            if (n !== undefined) this._children.splice(n, 0, child);
+            else this._children.push(child);
+        }
+    },
+    getChildren() {
+        return this._children.slice(0); // clone of array
+    },
+    removeChild(obj) {
+        let oldChild = null;
+        if (typeof obj === "number") {
+            if (this._children.length > n) oldChild = this._children.splice(obj, 1);
+        } else {
+            let i = this._children.indexOf(obj);
+            if (i >= 0) oldChild = this._children.splice(i, 1);
+        }
+        return oldChild;
+    },
+    emptyChildren() {
+        let children = this._children;
+        this._children = [];
+        return children;
+    }
+}
+
 class Playfield extends Mixin {
+    static {
+        Mixin.mixin({ Node })
+    }
+    static CONTINUE = "continue";
+    static BREAK = "break";
+
     _init(args) {
-        args = Mixin.getArgs(arguments, { canvasId: String, fullScreen: true });
+        args = Mixin.getArgs(arguments, { canvasId: String, tick: 125, fullScreen: true });
         this._canvas = document.querySelector(args.canvasId) || document.querySelector("#" + args.canvasId);
         if (!this._canvas) throw Error(`Could not find Canvas='${args.canvasId}' in DOM`);
         this._ctx = this._canvas.getContext('2d');
-        this._objs = [];
         this._x = this._canvas.offsetX;
         this._y = this._canvas.offsetX;
         this._w = this._canvas.width;
@@ -24,102 +61,115 @@ class Playfield extends Mixin {
         this._dragDX = null;
         this._dragDY = null;
         this._timerId = null;
+        this._tick = args.tick;
         this._fullScreen = args.fullScreen;
-        if (this._windowResize) this.resize(0, 0, window.outerWidth, window.outerHeight);
+        this._dWidth = 20;
+        this._dHeight = 20;
+        this._resizeHysterisis = 125;
+        this._resizeTimerId = null;
+        if (this._fullScreen) this.resize(0, 0, window.innerWidth, window.innerHeight);
+        this._canvas.oncontextmenu = function (e) { e.preventDefault(); e.stopPropagation(); }
+    }
+    _findObjInBounds(x, y) {
+        for (let obj of this.getChildren()) {
+            if (obj.inBounds(x, y)) return obj
+        }
+        return null;
     }
     _handleWindowResize(event) {
         if (this._fullScreen) {
             this.resize();
         }
     }
-    _findObjInBounds(x, y) {
-        for (let obj of this._objs) {
-            if (obj.inBounds(x, y)) return obj
-        }
-        return null;
-    }
     _handleKeyDown(event) {
+        event.stopPropagation();
         let stopProcessing = false
-        for (let obj of this._objs) {
+        for (let obj of this.getChildren()) {
             stopProcessing = obj.onKeyDown(event.key, event);
             if (stopProcessing) break;
         }
-        if (!stopProcessing) {
-            this.onKeyDown(event.key, event);
-        }
     }
     _handleMouseDown(event) {
-        for (let obj of this._objs) {
-            if (obj.inBounds(event.offsetX, event.offsetY)) {
-                this._dragStart(obj, event.offsetX, event.offsetY, event);
-                break;
-            }
+        event.stopPropagation();
+        if (event.button === 0) {
+            this._dispatchEvent("onClick", event, this.getChildren().reverse());
+        } else if (event.button === 2) {
+            this._dispatchEvent("onMenu", event, this.getChildren().reverse());
         }
-        this._dispatchEvent("onClick", event, true);
     }
     _handleMouseUp(event) {
-        this._dragStop(event.offsetX, event.offsetY, event);
-        this._dispatchEvent("onClickUp", event, true);
+        event.stopPropagation();
+        if (event.button === 0) {
+            this.dragStop(event);
+            this._dispatchEvent("onClickUp", event, this.getChildren().reverse());
+        } else if (event.button === 2) {
+            this._dispatchEvent("onMenuUp", event, this.getChildren().reverse());
+        }
     }
     _handleMouseMove(event) {
-        this._drag(event.offsetX, event.offsetY, event)
-        this._dispatchEvent("onHover", event, true);
+        event.stopPropagation();
+        this._drag(event)
+        this._dispatchEvent("onHover", event, this.getChildren().reverse());
     }
-    _dispatchEvent(fnName, event, onInBounds) {
+    _dispatchEvent(fnName, event, children, allObjects = false) {
         let x = event.offsetX;
         let y = event.offsetY;
-        let stopProcessing = false;
-        for (let obj of this._objs) {
-            if (onInBounds && !obj.inBounds(x, y)) continue;
+        let processed = false;
+        for (let obj of children) {
+            if (!obj.inBounds(x, y)) continue;
             let dx = x - obj.x;
             let dy = y - obj.y;
             let fn = obj[fnName].bind(obj);
-            stopProcessing = fn(dx, dy, event);
-            if (stopProcessing) break;
+            let keepGoing = fn(dx, dy, x, y, event);
+            processed = true;
+            if (keepGoing) continue;
+            if (!allObjects) break;
         }
-        return stopProcessing;
+        return processed;
     }
-    _dispatchAll(fnName, args) {
-        let stopProcessing = false;
-        for (let obj of this._objs) {
+    _dispatchArgs(fnName, args, children) {
+        for (let obj of children) {
             let fn = obj[fnName].bind(obj);
-            stopProcessing = fn(...args);
-            if (stopProcessing) break;
+            let stop = fn(...args);
+            if (stop) break;
         }
-        return stopProcessing;
     }
-    _timer(playfield) {
-        playfield._goAll();
-        playfield.redraw();
+    _timer() {
+        this._tickAll();
+        this.redraw();
     }
     _tickAll() {
-        for (let obj of this._objs) {
+        for (let obj of this.getChildren()) {
             obj.getTimer();
             obj.onTick();
         }
     }
-    _drag(mouseX, mouseY, event) {
-        let dx = mouseX - this._dragDX;
-        let dy = mouseY - this._dragDY;
-        if (this._dragObj) this._dragObj.onDrag(dx, dy, mouseX, mouseY, event);
-
+    _drag(event) {
+        if (this._dragObj) {
+            let mouseX = event.offsetX;
+            let mouseY = event.offsetY;
+            let dx = mouseX - this._dragDX;
+            let dy = mouseY - this._dragDY;
+            this._dragObj.onDrag(dx, dy, mouseX, mouseY, event);
+        }
     }
-    _dragStart(obj, mouseX, mouseY, event) {
-        this._dragStop(mouseX, mouseY, event);
+    dragStart(obj, event) {
+        this.dragStop(event);
+        let mouseX = event.offsetX;
+        let mouseY = event.offsetY;
         this._dragObj = obj;
         this._dragDX = mouseX - obj.x;
         this._dragDY = mouseY - obj.y;
-        let dx = mouseX - this._dragDX;
-        let dy = mouseY - this._dragDY;
-        this._dragObj.onDragStart(dx, dy, mouseX, mouseY, event);
     }
-    _dragStop(mouseX, mouseY, event) {
-        if (this._dragObj) {
+    dragStop(event) {
+        if (event && this._dragObj) {
+            let mouseX = event.offsetX;
+            let mouseY = event.offsetY;
             let dx = mouseX - this._dragDX;
             let dy = mouseY - this._dragDY;
             this._dragObj.onDragStop(dx, dy, mouseX, mouseY, event);
-            this._dragObj = null;
         }
+        this._dragObj = null;
     }
 
     get x() { return this._x; }
@@ -127,16 +177,22 @@ class Playfield extends Mixin {
     get w() { return this._w; }
     get h() { return this._h; }
 
+    get X0() { return this._x; }
+    get Y0() { return this._y; }
+    get X1() { return this.x + this.w; }
+    get Y1() { return this.y + this.h; }
+    get W() { return this._w; }
+    get H() { return this._h; }
+
     add(obj) {
-        obj._playfield = this;
         obj._ctx = this._ctx;
-        this._objs.splice(0, 0, obj);
+        this.addChild(obj);
     }
     redraw() {
         this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-        for (let i = this._objs.length - 1; i >= 0; i--) {
-            let obj = this._objs[i];
-            if (obj.isVisible) obj.draw(this._ctx);
+        for (let obj of this.getChildren()) {
+            console.log(obj._name, obj.x, obj.y, obj.w, obj.h)
+            if (obj.isVisible) obj.onDraw(this._ctx);
         }
     }
     select(obj) {
@@ -149,21 +205,17 @@ class Playfield extends Mixin {
             this._selectedObj = null;
         }
     }
-    toFront(obj) {
-        let i = this._objs.indexOf(obj);
-        if (i === -1) return;
-        this._objs.splice(i, 1);
-        this._objs.push(obj);
-    }
     toBack(obj) {
-        let i = this._objs.indexOf(obj);
-        if (i === -1) return;
-        this._objs.splice(i, 1);
-        this._objs.splice(0, 0, obj);
+        this.removeChild(obj);
+        this.addChild(obj, 0);
     }
-    start(tick = 125) {
+    toFront(obj) {
+        this.removeChild(obj);
+        this.addChild(obj);
+    }
+    start(tick) {
         this.redraw();
-        this._timerId = setInterval(this._timer.bind(this), tick);
+        this._timerId = setInterval(this._timer.bind(this), tick || this._tick);
     }
     stop() {
         if (this._timerId) {
@@ -174,7 +226,7 @@ class Playfield extends Mixin {
     }
     collisions(theObj, x = theObj.x, y = theObj.y, w = theObj.w, h = theObj.h) {
         let results = [];
-        for (let obj of this._objs) {
+        for (let obj of this.getChildren()) {
             if (theObj === obj) continue;
             if (obj.inBounds(x, y) ||
                 obj.inBounds(x + w, y) ||
@@ -185,41 +237,34 @@ class Playfield extends Mixin {
         return results;
     }
     reset() {
-        this._objs = [];
+        this.emptyChildren();
         this.stop();
     }
     resize(x, y, w, h) {
-        if (x === undefined) {
-            x = 0;
-            y = 0;
-            w = window.outerWidth;
-            h = window.outerHeight;
+        if (x === undefined) { // broser resized
+            if (this._resizeTimerId) clearTimeout(this._resizeTimerId);
+            this._resizeTimerId = setTimeout(this.resize.bind(this), this._resizeHysterisis, 0, 0, window.innerWidth, window.innerHeight);
+            return;
         }
-        this._canvas.x = x;
-        this._canvas.y = y;
-        this._canvas.width = w;
-        this._canvas.height = h;
-        this._x = x;
-        this._y = y;
-        this._w = w;
-        this._h = h;
-        this._dispatchAll("onResize", [x, y, w, h]);
+        this._resizeTimerId = null;
+        this._x = this._canvas.x = x;
+        this._y = this._canvas.y = y;
+        this._w = this._canvas.width = w - this._dWidth;
+        this._h = this._canvas.height = h - this._dHeight;
+        this._dispatchArgs("onResize", [this.x, this.y, this.w, this.h], this.getChildren());
+        this.redraw();
     }
 }
 
 class PObject extends Mixin {
+    static {
+        Mixin.mixin({ Node });
+    }
     _defaults = {
-        playfield: Playfield,
-        name: "",
-        color: "black",
-        x: 0,
-        y: 0,
-        w: 100,
-        h: 100,
-        borderColor: "red"
     };
     _init(args) {
-        args = Mixin.getArgs(arguments, this._defaults);
+        args = Mixin.getArgs(arguments, { parent: Node, name: "", color: "black", x: 0, y: 0, w: 100, h: 100, borderColor: "red", isDraggable: false });
+        this._parent = args.parent;
         this._name = args.name;
         this._color = args.color;
         this._borderColor = args.borderColor;
@@ -227,32 +272,51 @@ class PObject extends Mixin {
         this._w = args.w; this._h = args.h;
         this._isSelected = false;
         this._isVisible = true;
+        this._isDraggable = args.isDraggable;
         this._timer = 0;
         this._callback = null;
-        args.playfield.add(this);
+        args.parent.add(this);
     }
     onHover(x, y, mouseX, mouseY, event) { }; // abstract method
     onClick(x, y, mouseX, mouseY, event) { } // abstract method
     onClickUp(x, y, mouseX, mouseY, event) { } // abstract method
-    onDrag(x, y, mouseX, mouseY, event) { 
-        this.move(mouseX-x, mouseY-y);
+    onMenu(x, y, mouseX, mouseY, event) { } // abstracte method
+    onMenuUp(x, y, mouseX, mouseY, event) { } // abstracte method
+    onDrag(x, y, mouseX, mouseY, event) {
+        this.move(x, y);
+        this.getParent().redraw();
     }
-    onDragStart(x, y, mouseX, mouseY) { } // abstract method
     onDragStop(x, y, mouseX, mouseY) { } // abstract method
     onTick() { } // abstract method
-    onKey(key, event) { } // abstract method
+    onKeyDown(key, event) { } // abstract method
     onResize(x, y, w, h) { }
+    onDraw(ctx) { } // abstract method
 
     get x() { return this._x; }
     get y() { return this._y; }
+    get x0() { return this._x; }
+    get y0() { return this._y; }
+    get x1() { return this.x0 + this.w; }
+    get y1() { return this.y0 + this.h; }
     get w() { return this._w; }
     get h() { return this._h; }
+
+    get X0() { return this._x + this._parent.X0; }
+    get Y0() { return this._y + this._parent.Y0; }
+    get X1() { return this.X0 + this._w; }
+    get X1() { return this.Y0 + this._h; }
+    get W() { return this._w; }
+    get H() { return this._h; }
+
     get isVisible() { return this._isVisible; }
+    dragStart(event) {
+        this.getPlayfield().dragStart(this, event);
+    }
     toBack() {
-        this._playfield.toBack(this);
+        this.getParent().toBack(this);
     }
     toFront() {
-        this._playfield.toFront(this);
+        this.getParent().toFront(this);
     }
     hide() {
         this._isVisible = false;
@@ -261,7 +325,7 @@ class PObject extends Mixin {
         this._isVisible = true;
     }
     inBounds(x, y) {
-        let result = _between(this._x, x, this._x + this.w) && _between(this._y, y, this._y + this.h);
+        let result = _between(this.x0, x, this.x1) && _between(this.y0, y, this.y1);
         return result;
     }
     setTimer(ms, callback, context) {
@@ -283,16 +347,30 @@ class PObject extends Mixin {
         if (this._callback) this._callback(this._context)
         return 0;
     }
-    move(x, y) {
+    getPlayfield() {
+        let playfield = this.getParent();
+        while(playfield.getParent()) playfield = this.getParent();
+        return playfield;
+    }
+    move(x, y, w, h) {
         this._x = x;
         this._y = y;
+        if (w !== undefined) this._w = w;
+        if (h !== undefined) this._h = h;
     }
-    resize(w, h) {
+    resize(w, h, x, y) {
         this._w = w;
         this._h = h;
+        if (x !== undefined) this._x = x;
+        if (y !== undefined) this._y = y;
     }
     select(on_off) {
         this._isSelected = on_off;
     }
-    draw(ctx) { } // abstract method
+    redraw() {
+        this.getParent().redraw();
+    }
+    add(child) {
+        this.addChild(child);
+    }
 }
