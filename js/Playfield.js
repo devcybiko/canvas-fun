@@ -26,7 +26,7 @@ class Playfield extends Rect {
         this._fullScreen = args.fullScreen;
         this._dWidth = 20;
         this._dHeight = 20;
-        this._resizeHysterisis = 125;
+        this._resizeHysterisis = 12;
         this._resizeTimerId = null;
         if (this._fullScreen) this.resize(0, 0, window.innerWidth, window.innerHeight);
         this._canvas.oncontextmenu = function (e) { e.preventDefault(); e.stopPropagation(); }

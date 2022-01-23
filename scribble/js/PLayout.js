@@ -6,7 +6,8 @@ class PLayout extends PObject {
         args = Mixin.getArgs(arguments, { name:"", xPercent:Number, yPercent:Number, wPercent:Number, hPercent:Number });
         super._init({ name:args.name, x:0, y:0, w:0, h:0});
         this._objs = [];
-        let [xPercent, yPercent, wPercent, hPercent] = this._normalizePercents(args.xPercent, args.yPercent, args.wPercent, args.hPercent);
+        // let [xPercent, yPercent, wPercent, hPercent] = this._normalizePercents(args.xPercent, args.yPercent, args.wPercent, args.hPercent);
+        let [xPercent, yPercent, wPercent, hPercent] = [args.xPercent, args.yPercent, args.wPercent, args.hPercent];
         this._xPercent = xPercent;
         this._yPercent = yPercent;
         this._wPercent = wPercent;
@@ -26,14 +27,20 @@ class PLayout extends PObject {
         }
         return results;
     }
+    _intOrPercent(x, percent) {
+        if (percent > 1.0) return percent;
+        return Math.floor(x * percent);
+    }
     _recompute() {
-        this._x = Math.floor(this.getParent().w * this._xPercent);
-        this._y = Math.floor(this.getParent().h * this._yPercent);    
-        this._w = Math.floor(this.getParent().w * this._wPercent);
-        this._h = Math.floor(this.getParent().h * this._hPercent);
+        this.toFront();
+        this._x = this._intOrPercent(this.getParent().w, this._xPercent);
+        this._y = this._intOrPercent(this.getParent().h, this._yPercent);    
+        this._w = this._intOrPercent(this.getParent().w, this._wPercent);
+        this._h = this._intOrPercent(this.getParent().h, this._hPercent);
         for(let obj of this._objs) {
             obj.move(obj._xPercent, obj._yPercent);
             obj.resize(obj._wPercent, obj._hPercent);
+            obj.obj.toFront();
         };
         this.redraw();
     }

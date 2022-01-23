@@ -1,5 +1,6 @@
 
 const ANCHOR_SIZE = 5;
+const DEFAULT_SIZE = 50;
 let choose = "Circle";
 let count = 0;
 
@@ -24,14 +25,14 @@ class Scribble extends Mixin {
     this.drawTable.toBack();
   }
   buildMenu(playfield) {
-    this.menu = PLayout.factory({ name: "menu", xPercent: 0, yPercent: 0, wPercent: 100, hPercent: 10 });
+    this.menu = PLayout.factory({ name: "menu", xPercent: 0, yPercent: 0, wPercent: 1.0, hPercent: 25 });
     playfield.add(this.menu);
     this.homeButton = Button.factory({ name: "home", text: "Home", x: 0, y: 0, w: 10, h: 10 });
     this.rectButton = Button.factory({ name: "rect", text: "Rectangle", x: 0, y: 0, w: 10, h: 10 });
     this.circleButton = Button.factory({ name: "circle", text: "Circle", x: 0, y: 0, w: 10, h: 10, selected: true });
-    this.menu.add(this.homeButton, 0, 0, 25, 100);
-    this.menu.add(this.rectButton, 25, 0, 25, 100);
-    this.menu.add(this.circleButton, 50, 0, 25, 100);
+    this.menu.add(this.homeButton, 0, 0, 0.25, 1);
+    this.menu.add(this.rectButton, 0.25, 0, 0.25, 1);
+    this.menu.add(this.circleButton, 0.50, 0, 0.25, 1);
     this.menu.toBack();
   }
   reset() {
@@ -81,15 +82,16 @@ class DrawTable extends PObject {
   }
   onClick(dx, dy, event) {
     this.toBack();
-    this._x0 = event.playfieldX;
-    this._y0 = event.playfieldY;
-    if (choose === "Rectangle") this.rubberBand = Box.factory({ name: "box-" + count, x: this._x0, y: this._y0, w: 1, h: 1 });
-    else if (choose === "Circle") this.rubberBand = Circle.factory({ name: "circle-" + count, x: this._x0, y: this._y0, w: 1, h: 1 });
+    let x = event.playfieldX;
+    let y = event.playfieldY;
+    if (choose === "Rectangle") this.rubberBand = Box.factory({ name: "box-" + count, x: x-DEFAULT_SIZE, y: y-DEFAULT_SIZE, w: DEFAULT_SIZE, h: DEFAULT_SIZE });
+    else if (choose === "Circle") this.rubberBand = Circle.factory({ name: "circle-" + count, x: x-DEFAULT_SIZE, y: y-DEFAULT_SIZE, w: DEFAULT_SIZE, h: DEFAULT_SIZE });
     else return;
     this.getPlayfield().add(this.rubberBand);
     this.rubberBand.scribble = this;
     count++;
-    this.rubberBand.onClick(dx, dy, event);
+    this.list.push(this.rubberBand);
+    this.rubberBand.onClick(DEFAULT_SIZE, DEFAULT_SIZE, event);
   }
   onDragStop(dx, dy, event) {
     if (dx < 20 || dy < 20) {
