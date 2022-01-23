@@ -3,16 +3,16 @@ class PLayout extends PObject {
       this.mixin({ Node, GraphicsMixin, LoggingMixin });
     }
     _init(args) {
-        args = Mixin.getArgs(arguments, { parent: Node, name:"", xPercent:Number, yPercent:Number, wPercent:Number, hPercent:Number });
-        super._init({parent:args.parent, name:args.name, x:0, y:0, w:0, h:0});
+        args = Mixin.getArgs(arguments, { name:"", xPercent:Number, yPercent:Number, wPercent:Number, hPercent:Number });
+        super._init({ name:args.name, x:0, y:0, w:0, h:0});
         this._objs = [];
         let [xPercent, yPercent, wPercent, hPercent] = this._normalizePercents(args.xPercent, args.yPercent, args.wPercent, args.hPercent);
         this._xPercent = xPercent;
         this._yPercent = yPercent;
         this._wPercent = wPercent;
         this._hPercent = hPercent;
-        this.move(xPercent, yPercent);
-        this.resize(wPercent, hPercent);
+        this.move(xPercent, yPercent, false);
+        this.resize(wPercent, hPercent, false);
     }
     _normalizePercent(percent) {
         if (percent <=1.0) percent = percent;
@@ -51,6 +51,7 @@ class PLayout extends PObject {
         this._recompute();
     }
     add(obj, xPercent, yPercent, wPercent, hPercent) {
+        this.getPlayfield().add(obj);
         let newObj = new PLayoutObj(this, obj, xPercent, yPercent, wPercent, hPercent);
         this._objs.push(newObj);
         newObj.move(newObj._xPercent, newObj._yPercent);
@@ -58,14 +59,8 @@ class PLayout extends PObject {
     }
     onDraw(ctx) {
         this.rect({color:"black", x:this.X0, y:this.Y0, w:this.W, h:this.H});
-        // for(obj of objs) {
-        //     obj.onDraw(ctx);
-        // }
     }
     redraw() {
-        console.log("PLayout.redraw");
-        console.log("xxx", this);
-        console.log("redraw", this.getParent());
         this.getParent().redraw();
     }
 }

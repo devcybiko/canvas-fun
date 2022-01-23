@@ -1,7 +1,10 @@
 const LoggingMixin = {
     LoggingMixin() {
+        this._debug = false;
     },
-    log(args) {
-        console.log("LoggingMixin::log", ...arguments);
+    debug(args) {
+        if (this._debug) {
+            console.log("debug: ", ...arguments);
+        }
     }
 }

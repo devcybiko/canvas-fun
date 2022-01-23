@@ -15,7 +15,8 @@ class Mixin {
         let obj = new clazz(null);
         if (obj._init === undefined) throw Error("Mixin classes need an _init() method");
         obj._init(...arguments);
-        return Mixin.seal(obj);
+        let proxy = Mixin.seal(obj);
+        return proxy;
     }
     static accessorProxy = {
         get: function (target, name) {
@@ -74,6 +75,7 @@ class Mixin {
     static seal(obj) {
         obj._sealed_ = true;
         let proxy = new Proxy(obj, Mixin.accessorProxy);
+        Object.preventExtensions(proxy); // this may be better than changing the accessors.set()
         return proxy;
     }
     static mixin(_mixers, force = false) {
