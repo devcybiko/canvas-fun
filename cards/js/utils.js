@@ -49,11 +49,22 @@ function _range(a, b) {
     return result;
 }
 
-async function _spawnCallback(callback, args=[]) {
-    await callback(...args);
+async function _spawnCallback$(_asyncFunction$, args=[]) {
+    await _asyncFunction$(...args);
 }
-function _spawn(callback, args=[]) {
-    return setTimeout(_spawnCallback, 1000, callback, args);
+function _spawn$(_asyncFunction$, ...args) {
+    return setTimeout(_spawnCallback$, 1, _asyncFunction$, args);
 }
 
+function _delete(obj, ...keys) {
+    let oldValues = [];
+    for(let key of keys) {
+        if (key in obj) {
+            oldValues.push(obj[key]);
+            delete obj[key];
+        }
+        else oldValues.push(undefined);
+    }
+    return oldValues;
+}
 // if (typeof module !== 'undefined') module.exports = {_log,_error,_between,_random,_classOf,_classesOf,_instanceOf,_isClass,_range};

@@ -1,35 +1,6 @@
 const BitmapMixin = {
     BitmapMixin(obj) {
     },
-    async loadSheet(jpg, w, h) {
-        let image = new Image();
-        // Wait for the sprite sheet to load
-        image.onload = function () {
-            let promises = [];
-            let h = image.height / 3;
-            let w = image.width / 5;
-            for (let row = 0; row < image.height; row += h) {
-                for (let col = 0; col < image.width; col += w) {
-                    promises.push(createImageBitmap(image, col, row, w, h))
-                }
-            }
-            Promise.all(promises).then(function (sprites) {
-                let i = 0;
-                for (let sprite of sprites) {
-                    if (i < 13) {
-                        let parms = { bitmap: sprite, suit: SUITS[n], face: FACES[i], value: VALUES[i] };
-                        let card = Card.factory(parms);
-                        that._parent.addObject(card);
-                        that.cards.push(card);
-                    }
-                    i++;
-                }
-            });
-        }
-
-        // Load the sprite sheet from an image file
-        image.src = jpg;
-    },
     async createImageBitmap$(image, x, y, w, h) {
         let bitmap = await createImageBitmap(image, x || 0, y || 0, w || image.width, h || image.height);
         return bitmap;

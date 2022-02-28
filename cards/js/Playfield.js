@@ -26,7 +26,7 @@ class Playfield extends Rect {
         this._fullScreen = args.fullScreen;
         this._dWidth = 20;
         this._dHeight = 20;
-        this._resizeHysterisis = 12;
+        this._resizeHysterisis = 50;
         this._resizeTimerId = null;
         if (this._fullScreen) this.resize(0, 0, window.innerWidth, window.innerHeight);
         this._canvas.oncontextmenu = function (e) { e.preventDefault(); e.stopPropagation(); }
@@ -198,8 +198,10 @@ class Playfield extends Rect {
         this.stop();
     }
     resize(x, y, w, h) {
-        if (x === undefined) { // broser resized
+        if (x === undefined) {
+            // browser resized - resize the canvas to the size of this window
             if (this._resizeTimerId) clearTimeout(this._resizeTimerId);
+            // its not a good idea to resize as the window is resizing, so wait a 'tick' before resizing the entire viewport
             this._resizeTimerId = setTimeout(this.resize.bind(this), this._resizeHysterisis, 0, 0, window.innerWidth, window.innerHeight);
             return;
         }

@@ -50,7 +50,7 @@ class Mixin {
             args = args[0] || {};
             let i = 0;
             for (let name of defaultNames) {
-                let arg = args[name];
+                let arg = name in args ? args[name] : undefined;
                 if (defaults[name] === undefined) throw new Error(`ERROR - default value of '${name}' needs to be a constant or a Class`);
                 this._assignArgument(errors, newargs, i, name, arg, defaults[name]);
                 i++;
