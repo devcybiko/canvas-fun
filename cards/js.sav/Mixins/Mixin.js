@@ -1,4 +1,4 @@
-if (typeof module !== 'undefined')  var {_log,_error,_between,_random,_classOf,_classesOf,_instanceOf,_isClass} = require('../js/utils.js');
+if (typeof module !== 'undefined')  var {_log,_error,_between,_random,_classOf,_classesOf,_instanceOf,_isClass} = require('../utils.js');
 /**
  * Object.preventExtensions(object1);
  */
@@ -20,7 +20,7 @@ class Mixin {
     }
     static accessorProxy = {
         get: function (target, name) {
-            if (name !== 'prototype' && !Reflect.has(target, name)) throw Error("No such property: " + name);
+            if (name !== 'prototype' && !Reflect.has(target, name) && (typeof name === "string")) throw Error("No such property: " + name);
             return Reflect.get(target, name);
         },
         set: function (target, name, value) {
@@ -78,17 +78,17 @@ class Mixin {
         Object.preventExtensions(proxy); // this may be better than changing the accessors.set()
         return proxy;
     }
-    static mixin(_mixers, force = false) {
-        this._initializers = this._initializers || [];
+    static mixin(_clazz, _mixers, force = false) {
+        _clazz._initializers = _clazz._initializers || [];
         for(let name of Object.keys(_mixers)) {
-            if (this.prototype[name]) continue; // we've already mixed this one in
+            if (_clazz.prototype[name]) continue; // we've already mixed this one in
             for(let fnName of Object.keys(_mixers[name])) {
-                if (this.prototype[fnName] && !force) throw new Error("ERROR - {" + name + "} - already has a method '" + fnName + "()'");
+                if (_clazz.prototype[fnName] && !force) throw new Error("ERROR - {" + name + "} - already has a method '" + fnName + "()'");
             }
             let initializer = _mixers[name][name];
             if (typeof initializer !== "function") throw new Error("ERROR - {" + name + "} - should have a init function '" + name + "()'");
-            this._initializers.push(initializer);
-            Object.assign(this.prototype, _mixers[name]);
+            _clazz._initializers.push(initializer);
+            Object.assign(_clazz.prototype, _mixers[name]);
         }
     }
     _init_() {

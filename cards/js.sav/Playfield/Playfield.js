@@ -1,11 +1,9 @@
 class Playfield extends Rect {
-    static {
-        Mixin.mixin({ Node })
-    }
     static CONTINUE = "continue";
     static BREAK = "break";
 
     _init(args) {
+        this.setDebug(false);
         args = Mixin.getArgs(arguments, { canvasId: String, tick: 125, fullScreen: true });
         this._canvas = document.querySelector(args.canvasId) || document.querySelector("#" + args.canvasId);
         if (!this._canvas) throw Error(`Could not find Canvas='${args.canvasId}' in DOM`);
@@ -18,6 +16,11 @@ class Playfield extends Rect {
         this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));
         this._canvas.addEventListener('mousemove', this._handleMouseMove.bind(this));
         this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));
+        this._canvas.addEventListener("touchstart", this._handleMouseDown.bind(this), { capture: true, passive: false });
+        this._canvas.addEventListener("touchend", this._handleMouseUp.bind(this), { capture: true, passive: false });
+        this._canvas.addEventListener("touchcancel", this._handleMouseUp.bind(this), { capture: true, passive: false });
+        this._canvas.addEventListener("touchmove", this._handleMouseMove.bind(this), { capture: true, passive: false });
+      
         document.addEventListener("keydown", this._handleKeyDown.bind(this));
         window.onresize = this._handleWindowResize.bind(this);
         this._dragObj = { obj: null, X: 0, Y: 0 };
@@ -38,8 +41,15 @@ class Playfield extends Rect {
         return null;
     }
     _updateEvent(event) {
-        event.playfieldX = event.offsetX;
-        event.playfieldY = event.offsetY;
+        // canX = e.targetTouches[0].pageX - can.offsetLeft;
+        // canY = e.targetTouches[0].pageY - can.offsetTop;
+        if (event.targetTouches && event.targetTouches[0]) {
+            event.playfieldX = event.targetTouches[0].pageX - event.srcElement.offsetLeft;
+            event.playfieldY = event.targetTouches[0].pageY - event.srcElement.offsetTop;
+        } else {
+            event.playfieldX = event.offsetX;
+            event.playfieldY = event.offsetY;    
+        }
     }
     _handleWindowResize(event) {
         if (this._fullScreen) {
@@ -59,9 +69,10 @@ class Playfield extends Rect {
         this.redraw();
     }
     _handleMouseDown(event) {
+        event.preventDefault();
         event.stopPropagation();
         this._updateEvent(event);
-        if (event.button === 0) {
+        if (event.button === 0 || event.type === "touchstart") {
             this._dispatchArgs("_onClickDown", [event], this.getChildren().reverse());
         } else if (event.button === 2) {
             this._dispatchEvent("onMenu", event, this.getChildren().reverse());
@@ -69,9 +80,10 @@ class Playfield extends Rect {
         this.redraw();
     }
     _handleMouseUp(event) {
+        event.preventDefault();
         event.stopPropagation();
         this._updateEvent(event);
-        if (event.button === 0) {
+        if (event.button === 0 || event.type === "touchend") {
             this.dragStop(event);
             this._dispatchEvent("_onClickUp", event, this.getChildren().reverse());
         } else if (event.button === 2) {
@@ -80,6 +92,7 @@ class Playfield extends Rect {
         this.redraw();
     }
     _handleMouseMove(event) {
+        event.preventDefault();
         event.stopPropagation();
         this._updateEvent(event);
         this._drag(event)
@@ -110,13 +123,23 @@ class Playfield extends Rect {
         }
     }
     _timer() {
-        this._tickAll();
-        this.redraw();
+        this.debug({_panic_button_});
+        if (_panic_button_) {
+            this.stop();
+            return;
+        }
+        try {
+            this._tickAll();
+            this.redraw();    
+        } catch(e) {
+            console.error(e);
+            _panic_button_ = true;
+        }
     }
     _tickAll() {
         for (let obj of this.getChildren()) {
             obj.getTimer();
-            obj.onTick();
+            if (obj.onTick) obj.onTick();
         }
     }
     _drag(event) {
@@ -125,6 +148,10 @@ class Playfield extends Rect {
             let dy = event.playfieldY - this._dragObj.Y;
             this._dragObj.obj.onDrag(dx, dy, event);
         }
+    }
+    die() {
+        _error("stopping due to error");
+        this.stop();
     }
     dragStart(obj, event) {
         this.dragStop(event);
@@ -142,7 +169,7 @@ class Playfield extends Rect {
     }
     add(obj) {
         // console.log(obj);
-        if (!obj._sealed_) throw new Error(obj.constructor.name + ": You must only add Playfield objects outside of the _init() method")
+        if (!obj._sealed_) throw new Error(obj.constructor.name + ": You may only add Playfield objects outside of the _init() method")
         obj._ctx = this._ctx;
         this.addChild(obj);
     }
@@ -213,3 +240,4 @@ class Playfield extends Rect {
         this._dispatchArgs("onResize", [this.x, this.y, this.w, this.h], this.getChildren());
     }
 }
+Mixin.mixin(Playfield, { NodeMixin, LoggingMixin});

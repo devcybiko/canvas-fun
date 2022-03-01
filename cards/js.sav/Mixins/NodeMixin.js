@@ -1,5 +1,5 @@
-Node = {
-    Node() {
+NodeMixin = {
+    NodeMixin() {
         this._parent = null;
         this._children = [];
         this._data = {};

@@ -2,7 +2,7 @@ function _log(msg) {
     console.log(...arguments);
 }
 function _error(msg) {
-    console.error(msg);
+    console.error(...arguments);
 }
 function _between(a, b, c) {
     let result = a <= b && b <= c;

@@ -1,8 +1,4 @@
 class Message extends PObject {
-    static {
-        this.mixin({ GraphicsMixin });
-        this.mixin({ LoggingMixin });
-    }
     _callback(ctx) {
     }
     _init(args) {
@@ -85,3 +81,4 @@ class Button extends PObject {
     }
 
 }
+Mixin.mixin(UI, { GraphicsMixin, LoggingMixin });

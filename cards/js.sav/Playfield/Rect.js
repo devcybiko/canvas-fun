@@ -1,9 +1,10 @@
 class Rect extends Mixin {
-    _init() {
-        this._x = 0;
-        this._y = 0;
-        this._w = 0;
-        this._h = 0;
+    _init(args) {
+        args = Mixin.getArgs(arguments, { x: 0, y: 0, w: 0, h: 0 });
+        this._x = args.x;
+        this._y = args.y;
+        this._w = args.w;
+        this._h = args.h;
     }
     get x() { return this._x; }
     get y() { return this._y; }

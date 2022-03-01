@@ -1,9 +1,7 @@
 class Sprite extends PObject {
-    static {
-        Mixin.mixin({ GraphicsMixin });
-    }
     _init(args) {
-        args = Mixin.getArgs(arguments, { bitmap: ImageBitmap, name: "", x: 0, y: 0, selected: false });
+        this.msg("Sprite");
+        args = Mixin.getArgs(arguments, { bitmap: ImageBitmap, name: "", x: 0, y: 0, selected: false, isVisible: true });
         [this._bitmap] = _delete(args, "bitmap", "_args_", "_sealed_");
         super._init(args);
         this._w = this._bitmap.width;
@@ -34,3 +32,4 @@ class Sprite extends PObject {
         this.bitmap(this._bitmap, this.x, this.y, this.w, this.h);
     }
 }
+// Mixin.mixin(Sprite, { GraphicsMixin });

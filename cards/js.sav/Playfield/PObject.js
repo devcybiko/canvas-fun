@@ -1,11 +1,6 @@
 class PObject extends Rect {
-    static {
-        Mixin.mixin({ Node, LoggingMixin });
-    }
-    _defaults = {
-    };
     _init(args) {
-        args = Mixin.getArgs(arguments, { name: "", color: "black", x: 0, y: 0, w: 100, h: 100, borderColor: "red", selected: false });
+        args = Mixin.getArgs(arguments, { name: "", color: "black", x: 0, y: 0, w: 100, h: 100, borderColor: "red", selected: false, isVisible: true });
         this._name = args.name;
         this._ctx = null;
         this._color = args.color;
@@ -20,13 +15,16 @@ class PObject extends Rect {
         this._oldY = 0;
         this._isHovering = false;
         this._isSelected = args.selected;
-        this._isVisible = true;
+        this._isVisible = args.isVisible;
         this._isClicked = false;
         this._isDragging = false;
+
+        this._xPercent, this._yPercent, this._wPercent, this._hPercent = 0;
     }
     _onClickDown(event) {
-        let dx = event.playfieldX - this.x;
-        let dy = event.playfieldY - this.y;
+        let dx = event.playfieldX - this.X;
+        let dy = event.playfieldY - this.Y;
+        this.debug(event.clicked)
         if (this.inBounds(event.playfieldX, event.playfieldY) && !event.clicked) {
             event.clicked = this;
             this._isClicked = true;
@@ -65,6 +63,21 @@ class PObject extends Rect {
             }
         }
     }
+    _relativeMove(xPercent, yPercent) {
+        this._xPercent = xPercent;
+        this._yPercent = yPercent;
+        let x = Math.floor(this.getParent().X + this.getParent().W * xPercent);
+        let y = Math.floor(this.getParent().Y + this.getParent().H * yPercent);
+        this.move(x, y);
+    }
+    _relativeResize(wPercent, hPercent) {
+        this._wPercent = wPercent;
+        this._hPercent = hPercent;
+        let w = Math.floor(this.layout.w * wPercent);
+        let h = Math.floor(this.layout.h * hPercent);
+        this.resize(w,h);
+    }
+
     isInFront() {
         let children = this.getPlayfield().getChildren();
         if (children.indexOf(this) === children.length - 1) return true;
@@ -73,6 +86,7 @@ class PObject extends Rect {
     onHover(dx, dy, event) { }; // abstract method
     onClick(dx, dy, event) {
         this.dragStart(event);
+        // _log("XXX CLICK!")
     } // abstract method
     onClickUp(dx, dy, event) { } // abstract method
     onMenu(dx, dy, event) { } // abstracte method
@@ -97,12 +111,12 @@ class PObject extends Rect {
     get w() { return this._w; }
     get h() { return this._h; }
 
-    get X() { return this._x; }
-    get Y() { return this._y; }
+    get X() { return this._x + this._parent.X; }
+    get Y() { return this._y + this._parent.Y; }
     get X0() { return this._x + this._parent.X0; }
     get Y0() { return this._y + this._parent.Y0; }
     get X1() { return this.X0 + this._w; }
-    get X1() { return this.Y0 + this._h; }
+    get Y1() { return this.Y0 + this._h; }
     get W() { return this._w; }
     get H() { return this._h; }
 
@@ -125,7 +139,10 @@ class PObject extends Rect {
         this._isVisible = true;
     }
     inBounds(x, y) {
-        let result = _between(this.x0 - ANCHOR_SIZE / 2, x, this.x1 + ANCHOR_SIZE / 2) && _between(this.y0 - ANCHOR_SIZE / 2, y, this.y1 + ANCHOR_SIZE / 2);
+        this.debug(this.X0, x, this.X1);
+        this.debug(this.Y0, y, this.Y1);
+        let result = _between(this.X0 - ANCHOR_SIZE / 2, x, this.X1 + ANCHOR_SIZE / 2) && _between(this.Y0 - ANCHOR_SIZE / 2, y, this.Y1 + ANCHOR_SIZE / 2);
+        this.debug(result)
         return result;
     }
     setTimer(ms, callback, context) {
@@ -175,5 +192,8 @@ class PObject extends Rect {
     }
     add(child) {
         this.addChild(child);
+        child._ctx = this._ctx;
     }
 }
+Mixin.mixin(PObject, { NodeMixin, GraphicsMixin, LoggingMixin });
+
