@@ -26,6 +26,19 @@ class PRect {
     get y1() { return this._.y1 };
     get w() { return this._.w };
     get h() { return this._.h };
+
+    move(x0, y0, x1, y1) {
+        if (x0 === undefined || x0 === null) x0 = this._.x0;
+        if (y0 === undefined || y0 === null) y0 = this._.y0;
+        if (x1 === undefined || x1 === null) x1 = this._.x1;
+        if (y1 === undefined || y1 === null) y1 = this._.y1;
+        return PRect.xyxy(x0, y0, x1, y1);
+    }
+    resize(w, h) {
+        if (w === undefined || w === null) w = this._.w;
+        if (h === undefined || h === null) h = this._.h;
+        return PRect.xywh(this._.x0, this._.y0, w, h);
+    }
 }
 
 if (typeof module !== 'undefined') {

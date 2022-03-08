@@ -39,6 +39,13 @@ class PObject extends Rect {
         this.onClickUp(dx, dy, event);
         this._isClicked = false;
     }
+    _onDragStop(dx, dy, event) {
+        console.log("_onDragStop", event.playfieldX, event.playfieldY);
+        let hitObjects = this.getPlayfield()._findObjectsInBounds(event.playfieldX, event.playfieldY, this);
+        console.log(hitObjects);
+        if (hitObjects.length) hitObjects[0].onDrop(this);
+        this.onDragStop(dx, dy, event)
+    }
     _onMotion(event) {
         let dx = event.playfieldX - this.x;
         let dy = event.playfieldY - this.y;
@@ -87,6 +94,7 @@ class PObject extends Rect {
     onDraw(ctx) { } // abstract method
     onEnter(dx, dy, event) { }
     onExit(dx, dy, event) { }
+    onDrop(obj) { this.debug("onDrop")}
 
     get x() { return this._x; }
     get y() { return this._y; }
@@ -97,12 +105,12 @@ class PObject extends Rect {
     get w() { return this._w; }
     get h() { return this._h; }
 
-    get X() { return this._x; }
-    get Y() { return this._y; }
-    get X0() { return this._x + this._parent.X0; }
-    get Y0() { return this._y + this._parent.Y0; }
-    get X1() { return this.X0 + this._w; }
-    get X1() { return this.Y0 + this._h; }
+    get X() { return this.getParent().x + this._x; }
+    get Y() { return this.getParent().y + this._y; }
+    get X0() { return this.X; }
+    get Y0() { return this.Y; }
+    get X1() { return this.X + this._w; }
+    get Y1() { return this.Y + this._h; }
     get W() { return this._w; }
     get H() { return this._h; }
 

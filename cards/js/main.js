@@ -1,60 +1,30 @@
-let xywh = PRect.xywh(100, 200, 50, 75);
-console.log(xywh);
-let relrect = new PRelRect(25, 50, .75, .75)
-console.log(relrect);
+let canvasBM = PCanvasBitMap.factory({canvasId: "my_canvas"});
+// canvas.line(canvas.x, canvas.y, canvas.w, canvas.h);
 
-let canvas = document.querySelector("#my_canvas");
-if (!canvas) throw Error(`Could not find Canvas in DOM`);
-let ctx = canvas.getContext('2d');
+let rootObject = Playfield.factory({name: "root", bitmap: canvasBM});
+let screen = PObject.factory({name: "window", parent: rootObject, relrect: PRelRect.xywh(0, 0, 1.0, 1.0)});
+let menu = PObject.factory({name: "menu", parent: screen, relrect: PRelRect.xywh(0, 0, 1.0, 25)});
+let button1 = PObject.factory({name: "button1", parent: menu, relrect: PRelRect.xywh(1.01, 1.01, 0.25, 25)});
+let button2 = PObject.factory({name: "button2", parent: menu, relrect: PRelRect.xywh(0.25, 0.00, 0.25, 25)});
+let button3 = PObject.factory({name: "button3", parent: menu, relrect: PRelRect.xywh(0.50, 0.00, 0.25, 25)});
+let button4 = PObject.factory({name: "button4", parent: menu, relrect: PRelRect.xywh(0.75, 0.00, 0.25, 25)});
+let left = PObject.factory({name: "left", parent: screen, relrect: PRelRect.xyxy(0.00, 25, 0.25, 1.0)});
+let body = PObject.factory({name: "body", parent: screen, relrect: PRelRect.xyxy(0.25, 25, 1.00, 1.0)});
 
-function rect(prect, fill="red", stroke="black") {
-    ctx.fillStyle = fill;
-    ctx.fillRect(prect.x, prect.y, prect.w, prect.h);
-    ctx.strokeStyle = stroke;
-    ctx.strokeRect(prect.x, prect.y, prect.w, prect.h);
-}
+rootObject.draw();
 
-let xxx = 0;
-function redraw(incr) {
-    if (xxx > canvas.height) return;
-    let parent1 = PRect.xyxy(0, 0, xxx, xxx);
+let w = 10;
+let h = 10;
 
-    let ref = PRect.xywh(0, 0, canvas.width, canvas.height);
-    rect(ref, "white", "black");
-        
-    let prect1 = new PRelRect(0, 0, 0, 0, 1.0, 25);
-    let rect1 = prect1.scale(parent1)
-    rect(rect1, "blue");
-    console.log("blue", rect1._);
-    
-    let prect2 = new PRelRect(0, 25, 0, 0, 0.5, 1.0 );
-    prect2._.delta[5] = -25;
-    let rect2 = prect2.scale(parent1)
-    rect(rect2, "red");
-    console.log("red", rect2._);
-    
-    let prect3 = new PRelRect(0.5, 25, 1.0, 1.0 );
-    let rect3 = prect3.scale(parent1)
-    rect(rect3, "yellow");
-    console.log("yellow", rect3._);
-    
-
-    let prect5 = new PRelRect(0.25, 0.25, 0.75, 0.75, 0, 0 );
-    // prect5._.delta[1] = -25;
-    let rect5 = prect5.scale(parent1)
-    rect(rect5, "indigo");
-    console.log("indigo", rect5._);
-
-    let prect4 = new PRelRect(0.25, 0.50, 0, 0, 0.5, 50 );
-    prect4._.delta[1] = -25;
-    let rect4 = prect4.scale(parent1)
-    rect(rect4, "gray");
-    console.log("gray", rect4._);
-
-
-    xxx += incr;
-    setTimeout(redraw, 100, 10);
-}
-
-redraw(10);
+let id = setInterval(() => {
+    if (w + 10 > 512) {
+        clearInterval(id);
+        return;
+    }
+    w += 10;
+    h += 10;
+    menu.resize(w, h);
+    rootObject.draw();
+    console.log(h);
+}, 100)
 

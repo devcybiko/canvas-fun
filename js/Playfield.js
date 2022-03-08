@@ -32,10 +32,18 @@ class Playfield extends Rect {
         this._canvas.oncontextmenu = function (e) { e.preventDefault(); e.stopPropagation(); }
     }
     _findObjInBounds(x, y) {
-        for (let obj of this.getChildren()) {
+        for (let obj of this.getChildren().reverse()) {
             if (obj.inBounds(x, y)) return obj
         }
         return null;
+    }
+    _findObjectsInBounds(x, y, notMe) {
+        let results = [];
+        for (let obj of this.getChildren().reverse()) {
+            if (obj === notMe) continue;
+            if (obj.inBounds(x, y)) results.push(obj);
+        }
+        return results;
     }
     _updateEvent(event) {
         event.playfieldX = event.offsetX;
@@ -84,7 +92,7 @@ class Playfield extends Rect {
         this._updateEvent(event);
         this._drag(event)
         this._dispatchArgs("_onMotion", [event], this.getChildren().reverse());
-        // this.redraw();
+        this.redraw();
     }
     _dispatchEvent(fnName, event, children, allObjects = false) {
         let x = event.playfieldX;
@@ -135,8 +143,9 @@ class Playfield extends Rect {
         if (event && this._dragObj.obj) {
             let dx = event.playfieldX - this._dragObj.X;
             let dy = event.playfieldY - this._dragObj.Y;
-            this._dragObj.obj.onDragStop(dx, dy, event);
+            this._dragObj.obj._onDragStop(dx, dy, event);
             this._dragObj.obj._isDragging = false;
+
         }
         this._dragObj.obj = null;
     }

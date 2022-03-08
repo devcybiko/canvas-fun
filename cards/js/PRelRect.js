@@ -3,32 +3,71 @@ if (typeof module !== 'undefined') {
 }
 
 class PRelRect {
-    constructor(x0, y0, x1, y1, w=0, h=0) {
-        let p = this._ = {};
-        p.float = [0, 0, 0, 0, 0, 0];
-        p.delta = [0, 0, 0, 0, 0, 0];
-        if (Math.abs(x0) > 1.0) p.delta[0] = x0; else p.float[0] = x0;
-        if (Math.abs(x1) > 1.0) p.delta[2] = x1; else p.float[2] = x1;
-        if (Math.abs(y0) > 1.0) p.delta[1] = y0; else p.float[1] = y0;
-        if (Math.abs(y1) > 1.0) p.delta[3] = y1; else p.float[3] = y1;
-        if (Math.abs(w) > 1.0) p.delta[4] = w; else p.float[4] = w;
-        if (Math.abs(h) > 1.0) p.delta[5] = h; else p.float[5] = h;
+    static xywh(x0, y0, w, h, bx0=null, by0=null, bw=null, bh=null) {
+        let relrect = new PRelRect(x0, y0, 0, 0, w, h);
+        if (bx0 != null) relrect._.bx0 = bx0;
+        if (by0 != null) relrect._.by0 = by0;
+        if (bw != null) relrect._.bw = bw;
+        if (bh != null) relrect._.bh = bh;
+        return relrect;
     }
-    _scale(x0, w, i) {
-        return Math.floor(x0 + this._.float[i] * w + this._.delta[i]);
+    static xyxy(x0, y0, x1, y1, bx0 = null, by0 = null, bx1=null, by1=null) {
+        let relrect = new PRelRect(x0, y0, x1, y1, 0, 0);
+        if (bx0 != null) relrect._.bx0 = bx0;
+        if (by0 != null) relrect._.by0 = by0;
+        if (bx1 != null) relrect._.bx1 = bx1;
+        if (by1 != null) relrect._.by1 = by1;
+        return relrect;
     }
-    scale(pRect) {
+    constructor(x0, y0, x1, y1, w = 0, h = 0) {
+        let p = this._ = {
+            mx0: 0, bx0: 0, mx1: 0, bx1: 0,
+            my0: 0, by0: 0, my1: 0, by1: 0,
+            mw: 0, bw: 0, mh: 0, bh: 0
+        };
+        if (Math.abs(x0) > 1.0) p.bx0 = x0; else p.mx0 = x0;
+        if (Math.abs(x1) > 1.0) p.bx1 = x1; else p.mx1 = x1;
+        if (Math.abs(y0) > 1.0) p.by0 = y0; else p.my0 = y0;
+        if (Math.abs(y1) > 1.0) p.by1 = y1; else p.my1 = y1;
+        if (Math.abs(w) > 1.0) p.bw = w; else p.mw = w;
+        if (Math.abs(h) > 1.0) p.bh = h; else p.mh = h;
+        console.log("constructor", x0, y0, x1, y1, p);
+    }
+    _scale(x0, w, m, b) {
+        console.log("_scale", x0, w, m, b);
+        return Math.floor(x0 + m * w + b);
+    }
+    scale(parentRect) {
         let p = this._;
-        let px0 = this._scale(pRect.x0, pRect.w, 0);
-        let py0 = this._scale(pRect.y0, pRect.h, 1);
-        let px1 = this._scale(pRect.x0, pRect.w, 2);
-        let py1 = this._scale(pRect.y0, pRect.h, 3);
-        let pw = this._scale(0, pRect.w, 4);
-        let ph = this._scale(0, pRect.h, 5);
-        // if (p.delta[4] && p.float[0]) px0 -= p.delta[4]/2;
-        // if (p.delta[5] && p.float[1]) py0 -= p.delta[5]/2;
-        if (pw === 0 && ph === 0) return PRect.xyxy(px0, py0, px1, py1);
-        else return PRect.xywh(px0, py0, pw, ph);
+        console.log("p", p)
+        let px0 = this._scale(parentRect.x0, parentRect.w, p.mx0, p.bx0);
+        let py0 = this._scale(parentRect.y0, parentRect.h, p.my0, p.by0);
+        let px1 = this._scale(parentRect.x0, parentRect.w, p.mx1, p.bx1);
+        let py1 = this._scale(parentRect.y0, parentRect.h, p.my1, p.by1);
+        let pw = this._scale(0, parentRect.w, p.mw, p.bw);
+        let ph = this._scale(0, parentRect.h, p.mh, p.bh);
+        let result = null;
+        if (pw === 0 && ph === 0) result = PRect.xyxy(px0, py0, px1, py1);
+        else result = PRect.xywh(px0, py0, pw, ph);
+        console.log("parentRect", parentRect)
+        console.log("result", result);
+        return result;
+    }
+    move(x0, y0, x1, y1) {
+        let p = this._;
+        if (x0 !== undefined && x0 !== null) if (Math.abs(x0) > 1.0) {p.mx0 = 0; p.bx0 = x0;} else {p.mx0 = x0; p.bx0 = 0};
+        if (x1 !== undefined && x1 !== null) if (Math.abs(x1) > 1.0) {p.mx1 = 0; p.bx1 = x1;} else {p.mx1 = x1; p.bx1 = 0};
+        if (x0 !== undefined && x0 !== null) if (Math.abs(y0) > 1.0) {p.my0 = 0; p.by0 = y0;} else {p.my0 = y0; p.by0 = 0};
+        if (x1 !== undefined && x1 !== null) if (Math.abs(y1) > 1.0) {p.my1 = 0; p.by1 = y1;} else {p.my1 = y1; p.by1 = 0};
+        p.mw = 0;
+        p.bw = 0;
+        p.mh = 0;
+        p.bh = 0;
+    }
+    resize(w, h) {
+        let p = this._;
+        if (w !== undefined && w !== null) if (Math.abs(w) > 1.0) {p.mw = 0; p.bw = w;} else {p.mw = w; p.bw = 0};;
+        if (h !== undefined && h !== null) if (Math.abs(h) > 1.0) {p.mh = 0; p.bh = h;} else {p.mh = h; p.bh = 0};;
     }
 }
 if (typeof module !== 'undefined') {

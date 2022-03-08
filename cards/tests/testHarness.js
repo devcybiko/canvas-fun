@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 function main() {
     for (let i = 2; i < process.argv.length; i++) {
         let fname = process.argv[i];
