@@ -62,7 +62,6 @@ class PBitMap {
     }
     text(text, x0, y0, textStyle, w, h) {
         let PITCH = 12;
-        console.log("text", text);
         if (textStyle === undefined || textStyle === null) textStyle = {textBaseline: "middle", textAlign: "center", pitch: PITCH, color: "black", font: "sans-serif"};
         if (w === undefined) w = Math.floor(text.length * (textStyle.pitch||PITCH) * 0.5);
         if (h === undefined) h = Math.floor((textStyle.pitch||PITCH) * 1.5);
@@ -71,6 +70,9 @@ class PBitMap {
         this._.ctx.textAlign = (textStyle.textAlign || "center");
         this._.ctx.textBaseline = (textStyle.textBaseline || "middle");
         this._.ctx.fillText(text, x0 + w / 2, y0 + h / 2);
-
+    }
+    onClick(x, y, event) {
+        console.log("onClick: ", this.name);
+        return true;
     }
 }

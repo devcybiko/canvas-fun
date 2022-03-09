@@ -4,14 +4,20 @@ class PObject {
     }
     constructor(args) {
         this._ = {};
+        this._.root = this;
         this._.name = "none";
         this._.parent = null;
         this._.children = [];
         this._.relrect = null;
         this._.rect = null;
+        this._.agents = [];
+        this._.backgroundColor = "red";
+        this._.hoverColor = "green";
+        this._.saveColor = "red";
+        this._.color = "black";
+
     }
     _init(args) {
-        console.log("PObject", args);
         this._.name = args.name || "none";
         if (args.parent) {
             args.parent.add(this, args.relrect);
@@ -19,20 +25,57 @@ class PObject {
         return this;
     }
     _recompute() {
-        console.log("_recompute", this._.name);
         if (this._.relrect) this._.rect = this._.relrect.scale(this._.parent.rect);
-        console.log("_recompute", this._.rect._.x0, this._.rect._.y0, this._.rect._.w, this._.rect._.h);
         for (let child of this._.children) {
             child._recompute();
         }
     }
+    _inBounds(X, Y, dx = 0, dy = 0) {
+        // console.log("inbounds", this.name, this.X1, this.Y1,  this.X0 - dx / 2, x, this.X1 + dx / 2, this.y0 - dy / 2, y, this.y1 + dy / 2);
+        let result = _between(this.X0 - dx / 2, X, this.X1 + dx / 2) && _between(this.Y0 - dy / 2, Y, this.Y1 + dy / 2);
+        return result;
+    }
+    _addAgent(agent) {
+        this._.agents.push(agent);
+    }
+    _getAgentContext(name="default") {
+        let context = this.root._.agentContexts[name];
+        return context;
+    }
 
+    get name() { return this._.name; }
+    get parent() { return this._.parent }
+    get root() { return this._.root }
     get rect() { return this._.rect }
+    get children() { return this._.children }
+    get x() { return this.x0; }
+    get y() { return this.y0; }
+    get x0() { return this.rect.x0; }
+    get y0() { return this.rect.y0; }
+    get x1() { return this.rect.x1 }
+    get y1() { return this.rect.y1 }
+    get w() { return this.rect.w; }
+    get h() { return this.rect.h; }
+    get X() { return this.X0; }
+    get Y() { return this.Y0; }
+    get X0() { return this.x0 + (this.parent ? this.parent.x0 : 0); }
+    get Y0() { return this.y0 + (this.parent ? this.parent.y0 : 0); }
+    get X1() { return this.X0 + this.W - 1; }
+    get Y1() { return this.Y0 + this.H - 1; }
+    get W() { return this.rect.w; }
+    get H() { return this.rect.h; }
+
+    inBounds(x, y, dx = 0, dy = 0) {
+        // console.log("inbounds", this.name, this.X0, this.Y0,  - dx / 2, x, this.x1 + dx / 2, this.y0 - dy / 2, y, this.y1 + dy / 2);
+        let result = _between(- dx / 2, x, this.w + dx / 2) && _between(- dy / 2, y, this.h + dy / 2);
+        return result;
+    }
+
     add(child, relrect) {
-        console.log("add", this._.name, child._.name);
         let parent = this._;
         parent.children.push(child);
         child._.parent = this;
+        child._.root = parent.root;
         if (relrect) {
             child._.relrect = relrect;
             child._.rect = relrect.scale(parent.rect);
@@ -40,29 +83,22 @@ class PObject {
         }
     }
     box(x0, y0, w, h, borderColor, fillColor) {
-        let parent = this._.parent;
-        if (parent) {
-            parent.box(x0, y0, w, h, borderColor, fillColor);
-        }
+        this.parent.box(this.x0 + x0, this.y0 + y0, w, h, borderColor, fillColor);
     }
     text(text, x0, y0, textStyle, w, h) {
-        let parent = this._.parent;
-        if (parent) {
-            parent.text(text, x0, y0, textStyle, w, h);
-        }
+        this.parent.text(text, this.x0 + x0, this.y0 + y0, textStyle, w, h);
     }
     move(x0, y0, x1, y1) {
-        console.log("move", this._.name, x0, y0);
         this._.relrect.move(x0, y0, x1, y1);
     }
     resize(w, h) {
         this._.relrect.resize(w, h);
     }
     draw() {
+        // console.log(this._.name, this.x0, this.y0, this.x1, this.y1, this.w, this.h);
         let p = this._;
-        let rect = p.rect;
-        this.box(rect.x, rect.y, rect.w, rect.h, "1px solid black", "red")
-        this.text(p.name, rect.x, rect.y, null, rect.w, rect.h);
+        this.box(0, 0, this.w, this.h, this._.color, this._.backgroundColor)
+        this.text(p.name, 0, 0, null, this.w, this.h);
         for (let child of this._.children) {
             child.draw();
         }

@@ -12,16 +12,57 @@ class Playfield extends PObject {
         super(args);
     }
     _init(args) {
-        console.log("Playfield", args)
+        super._init(args);
         let p = this._;
         p.bitmap = args.bitmap;
-        console.log("bitmap", args.bitmap);
         p.bitmap = args.bitmap;
         p.rect = PRect.xywh(p.bitmap.x, p.bitmap.y, p.bitmap.w, p.bitmap.h);
-        super._init(args);
+        p.agentContexts = {};
         return this;
     }
-    get rect() { return this._.rect}
+    _prologs(eventType, event) {
+        for(let contextName of Object.keys(this._.agentContexts)) {
+            let context = this._getAgentContext(contextName);
+            for (let className of Object.keys(context.classes)) {
+                let clazz = context.classes[className];
+                clazz.prolog(eventType, event, context)
+            }
+        }
+    }
+    _epilogs(eventType, event) {
+        for(let contextName of Object.keys(this._.agentContexts)) {
+            let context = this._getAgentContext(contextName);
+            for (let className of Object.keys(context.classes)) {
+                let clazz = context.classes[className];
+                clazz.epilog(eventType, event, context)
+            }
+        }
+    }
+    _dispatchEventAcrossAgents(obj, eventType, event, method) {
+        let stop = false;
+        for(let agent of obj._.agents) {
+            if (stop) break;
+            stop = agent.handle(eventType, event, method);
+        }
+        return stop;
+    }
+    _dispatchEventAcrossChildren(obj, eventType, event,) {
+        // console.log("_dispatchEventAcrossChildren", obj.name, eventType);
+        let stop = this._dispatchEventAcrossAgents(obj, eventType, event);
+        let children = obj.children.slice(0).reverse();
+        for(let child of children) {
+            if (stop) break;
+            stop = this._dispatchEventAcrossChildren(child, eventType, event);
+        }
+        return stop;
+    }
+    dispatchEventAcrossChildren(eventType, event) {
+        this._prologs(eventType, event);
+        let stop = this._dispatchEventAcrossChildren(this, eventType, event);
+        this._epilogs(eventType, event);
+        if (event.isDirty) this.draw();
+        return stop
+    }
 
     move(x0, y0, x1, y1) {
         this._.rect = this._.rect.move(x0, y0, x1, y1);

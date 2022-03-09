@@ -31,38 +31,45 @@ class PRelRect {
         if (Math.abs(y1) > 1.0) p.by1 = y1; else p.my1 = y1;
         if (Math.abs(w) > 1.0) p.bw = w; else p.mw = w;
         if (Math.abs(h) > 1.0) p.bh = h; else p.mh = h;
-        console.log("constructor", x0, y0, x1, y1, p);
     }
     _scale(x0, w, m, b) {
-        console.log("_scale", x0, w, m, b);
         return Math.floor(x0 + m * w + b);
     }
+
+    get x0() {return this._.bx0;}
+    get y0() {return this._.bx1;}
+    get x1() {return this._.by0;}
+    get y1() {return this._.by1;}
+    get w() {return this._.bw;}
+    get h() {return this._.bh;}
+
     scale(parentRect) {
         let p = this._;
-        console.log("p", p)
-        let px0 = this._scale(parentRect.x0, parentRect.w, p.mx0, p.bx0);
-        let py0 = this._scale(parentRect.y0, parentRect.h, p.my0, p.by0);
-        let px1 = this._scale(parentRect.x0, parentRect.w, p.mx1, p.bx1);
-        let py1 = this._scale(parentRect.y0, parentRect.h, p.my1, p.by1);
+        // let px0 = this._scale(parentRect.x0, parentRect.w, p.mx0, p.bx0);
+        // let py0 = this._scale(parentRect.y0, parentRect.h, p.my0, p.by0);
+        // let px1 = this._scale(parentRect.x0, parentRect.w, p.mx1, p.bx1);
+        // let py1 = this._scale(parentRect.y0, parentRect.h, p.my1, p.by1);
+        let px0 = this._scale(0, parentRect.w, p.mx0, p.bx0);
+        let py0 = this._scale(0, parentRect.h, p.my0, p.by0);
+        let px1 = this._scale(0, parentRect.w, p.mx1, p.bx1);
+        let py1 = this._scale(0, parentRect.h, p.my1, p.by1);
         let pw = this._scale(0, parentRect.w, p.mw, p.bw);
         let ph = this._scale(0, parentRect.h, p.mh, p.bh);
         let result = null;
         if (pw === 0 && ph === 0) result = PRect.xyxy(px0, py0, px1, py1);
         else result = PRect.xywh(px0, py0, pw, ph);
-        console.log("parentRect", parentRect)
-        console.log("result", result);
         return result;
     }
     move(x0, y0, x1, y1) {
         let p = this._;
         if (x0 !== undefined && x0 !== null) if (Math.abs(x0) > 1.0) {p.mx0 = 0; p.bx0 = x0;} else {p.mx0 = x0; p.bx0 = 0};
         if (x1 !== undefined && x1 !== null) if (Math.abs(x1) > 1.0) {p.mx1 = 0; p.bx1 = x1;} else {p.mx1 = x1; p.bx1 = 0};
-        if (x0 !== undefined && x0 !== null) if (Math.abs(y0) > 1.0) {p.my0 = 0; p.by0 = y0;} else {p.my0 = y0; p.by0 = 0};
-        if (x1 !== undefined && x1 !== null) if (Math.abs(y1) > 1.0) {p.my1 = 0; p.by1 = y1;} else {p.my1 = y1; p.by1 = 0};
-        p.mw = 0;
-        p.bw = 0;
-        p.mh = 0;
-        p.bh = 0;
+        if (y0 !== undefined && y0 !== null) if (Math.abs(y0) > 1.0) {p.my0 = 0; p.by0 = y0;} else {p.my0 = y0; p.by0 = 0};
+        if (y1 !== undefined && y1 !== null) if (Math.abs(y1) > 1.0) {p.my1 = 0; p.by1 = y1;} else {p.my1 = y1; p.by1 = 0};
+        // p.mw = 0;
+        // p.bw = 0;
+        // p.mh = 0;
+        // p.bh = 0;
     }
     resize(w, h) {
         let p = this._;
