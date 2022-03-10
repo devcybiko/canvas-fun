@@ -20,6 +20,8 @@ class PCanvasEventStream {
         return this;
     }
     _updateEvent(event) {
+        event.preventDefault();
+        event.stopPropagation();
         if (event.targetTouches && event.targetTouches[0]) {
             event.playfieldX = event.targetTouches[0].pageX - event.srcElement.offsetLeft;
             event.playfieldY = event.targetTouches[0].pageY - event.srcElement.offsetTop;
@@ -30,12 +32,11 @@ class PCanvasEventStream {
     }
     _dispatchEventAcrossPlayfields(eventType, event) {
         this._updateEvent(event);
-        let children = this.children.slice(0).reverse();
         let stop = false;
-        for (let child of children) {
+        for (let child of this.children) {
             if (stop) break;
             event.isDirty = false;
-            stop = child.dispatchEventAcrossChildren(eventType, event);
+            stop = child._dispatchAgents(eventType, event);
         }
         return stop;
     }
@@ -43,12 +44,10 @@ class PCanvasEventStream {
     get children() {return this._.children;}
 
     add(pobj) {
-        this._.children.push(pobj)
+        this._.children.unshift(pobj)
     }
 
     handleMouseDown(event) {
-        event.preventDefault();
-        event.stopPropagation();
         if (event.button === 0 || event.type === "touchstart") {
             this._dispatchEventAcrossPlayfields("onClick", event)
         } else if (event.button === 2) {
@@ -59,7 +58,7 @@ class PCanvasEventStream {
         event.preventDefault();
         event.stopPropagation();
         if (event.button === 0 || event.type === "touchend") {
-            // this._dispatchEventAcrossPlayfields("onClickUp", event)
+            this._dispatchEventAcrossPlayfields("onClickUp", event)
         } else if (event.button === 2) {
             // this._dispatchEvent("_onMenuUp", event, this.children.reverse());
         }
@@ -67,5 +66,5 @@ class PCanvasEventStream {
     handleMouseMove(event) {
         event.preventDefault();
         event.stopPropagation();
-        this._dispatchEventAcrossPlayfields("onMotion", event)
+        // this._dispatchEventAcrossPlayfields("onMotion", event)
     }}

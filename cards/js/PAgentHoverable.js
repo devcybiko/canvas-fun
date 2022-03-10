@@ -9,6 +9,7 @@ class PAgentHoverable extends PAgent {
         return super._init(args);
     }
     prolog(eventType, event) {
+        console.log("hover", "prolog", eventType);
         let x = event.playfieldX - this.obj.X0;
         let y = event.playfieldY - this.obj.Y0;
         let context = this.obj._getAgentContext(this.contextName);
@@ -20,6 +21,7 @@ class PAgentHoverable extends PAgent {
         }
     }
     onMotion(x, y, event, context) {
+        console.log("hover", "onMotion", eventType);
         let obj = this.obj;
         console.log("onMotion", obj.name);
         if (!context.hoveringObj && obj.inBounds(x, y)) {

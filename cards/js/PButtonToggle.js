@@ -1,4 +1,4 @@
-class PButton extends PObject {
+class PButtonToggle extends PButton {
     static factory(args) {
         return (new this(args))._init(args);
     }
@@ -14,23 +14,12 @@ class PButton extends PObject {
     }
     onClick(x, y, event, context, eventType) {
         // console.log("CLICK!", this._.name, x, y);
-        this._.isSelected = true;
-        this._.flashCount = 5;
+        this._.isSelected = !this._.isSelected;
         event.isDirty = true;
         return true;
     }
-    _flash() {
-        this._.flashCount--;
-        if (this._.flashCount > 2) return;
-        if (this._.flashCount % 2 == 1) this._.isSelected = true;
-        else this._.isSelected = false;
-        this.draw();
-        if (this._.flashCount === 0) clearInterval(this._.flashID);
-    }
     onClickUp(x, y, event, context, eventType) {
         // console.log("CLICKUP!", this._.name, x, y);
-        this._.flashID = setInterval(this._flash.bind(this), 50);
-        return false;
     }
     onEnter(x, y, event) {
         this._.backgroundColor = "green";

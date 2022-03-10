@@ -1,5 +1,5 @@
 class GArrays {
-    static ensureArray(arr) {
+    static ensureArray(arr = []) {
         if (!Array.isArray(arr)) {
             arr = [arr];
         }

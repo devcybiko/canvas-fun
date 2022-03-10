@@ -8,11 +8,14 @@ class PAgentClickable extends PAgent{
     _init(args) {
         return super._init(args);
     }
-    onClick(x, y, event, context) {
-        let obj = this.obj;
+    onClick(obj, x, y, event, context, eventType) {
         if (obj.inBounds(x, y) && obj.onClick) {
-            console.log("onClick", obj.name, context);
-            return obj.onClick(x, y, event, context);
+            return obj.onClick(x, y, event, context, eventType);
+        }
+    }
+    onClickUp(obj, x, y, event, context, eventType) {
+        if (obj.inBounds(x, y) && obj.onClick) {
+            return obj.onClickUp(x, y, event, context, eventType);
         }
     }
 }

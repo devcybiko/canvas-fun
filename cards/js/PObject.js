@@ -15,10 +15,11 @@ class PObject {
         this._.hoverColor = "green";
         this._.saveColor = "red";
         this._.color = "black";
-
+        this._.perpetuateEvents = true;
     }
     _init(args) {
         this._.name = args.name || "none";
+        this._agents = args.agents;
         if (args.parent) {
             args.parent.add(this, args.relrect);
         }
@@ -35,12 +36,21 @@ class PObject {
         let result = _between(this.X0 - dx / 2, X, this.X1 + dx / 2) && _between(this.Y0 - dy / 2, Y, this.Y1 + dy / 2);
         return result;
     }
-    _addAgent(agent) {
-        this._.agents.push(agent);
-    }
-    _getAgentContext(name="default") {
-        let context = this.root._.agentContexts[name];
-        return context;
+    _dispatchAgents(eventType, event) {
+        let p = this._;
+        let stop = false;
+        for(let agent of p.agents) {
+            if (stop) break;
+            stop = agent.handle(eventType, event);
+        }
+        if (p.perpetuateEvents && !stop) {
+            for(let child of this.children) {
+                if (stop) break;
+                stop = child._dispatchAgents(eventType, event);
+            }
+        }
+        if (event.isDirty) this.draw();
+        return stop
     }
 
     get name() { return this._.name; }
@@ -70,15 +80,26 @@ class PObject {
         let result = _between(- dx / 2, x, this.w + dx / 2) && _between(- dy / 2, y, this.h + dy / 2);
         return result;
     }
-
+    _addAgent(agent) {
+        this._.agents.push(agent);
+    }
+    _makeable(parent, agentNames) {
+        agentNames = GArrays.ensureArray(agentNames);
+        let agents = parent._.agents.filter(agent => agentNames.indexOf(agent.name) >= 0);
+        for(let agent of agents) {
+            // console.log("_makeable", agent.name, parent.name, this.name, agentNames);
+            agent.add(this);
+        }
+    }
     add(child, relrect) {
-        let parent = this._;
-        parent.children.push(child);
-        child._.parent = this;
-        child._.root = parent.root;
+        let parent = this;
+        let parentPrivate = this._;
+        parentPrivate.children.unshift(child);
+        child._.parent = parent;
+        child._.root = parentPrivate.root;
         if (relrect) {
             child._.relrect = relrect;
-            child._.rect = relrect.scale(parent.rect);
+            child._.rect = relrect.scale(parentPrivate.rect);
             child._recompute;
         }
     }
