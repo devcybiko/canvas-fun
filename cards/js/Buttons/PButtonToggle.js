@@ -1,4 +1,4 @@
-class PButtonSelect extends PButton {
+class PButtonToggle extends PButton {
     static factory(args) {
         return (new this(args))._init(args);
     }
@@ -9,25 +9,16 @@ class PButtonSelect extends PButton {
     }
     _init(args) {
         super._init(args);
-        this._makeable(this._.parent, "PAgentClickable")
         return this;
     }
     onClick(x, y, event, context, eventType) {
         // console.log("CLICK!", this._.name, x, y);
-        this._.isSelected = true;
+        this._.isSelected = !this._.isSelected;
         event.isDirty = true;
         return true;
     }
     onClickUp(x, y, event, context, eventType) {
-    }
-    onEnter(x, y, event) {
-        this._.backgroundColor = "green";
-        event.isDirty = true;
-        return true;
-    }
-    onExit(x, y, event) {
-        this._.backgroundColor = "red";
-        event.isDirty = true;
-        return false;
+        // do nothing
+        // specifically, don't reset the isSelected flag
     }
 }

@@ -10,12 +10,12 @@ class PAgentClickable extends PAgent{
     }
     onClick(obj, x, y, event, context, eventType) {
         if (obj.inBounds(x, y) && obj.onClick) {
-            return obj.onClick(x, y, event, context, eventType);
+            return this.on("onClick", obj, x, y, event, context, eventType);
         }
     }
     onClickUp(obj, x, y, event, context, eventType) {
-        if (obj.inBounds(x, y) && obj.onClick) {
-            return obj.onClickUp(x, y, event, context, eventType);
+        if (obj.inBounds(x, y)) {
+            return this.on("onClickUp", obj, x, y, event, context, eventType);
         }
     }
 }

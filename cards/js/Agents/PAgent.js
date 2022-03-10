@@ -14,11 +14,17 @@ class PAgent {
         return this;
     }
     get name () { return this._.name;}
+    get context () { return this._.context;}
+    get children () { return this._.children;}
 
     add(pobj) {
         this._.children.push(pobj);
     }
-
+    on(fnName, obj, x, y, event, context, eventType) {
+        let stop = false;
+        if (obj && obj[fnName]) stop = obj[fnName](x, y, event, context, eventType);
+        return stop;
+    }
     handle(eventType, event) {
         // console.log("handle", this.name, eventType);
         let stop = this.prolog(eventType, event);
@@ -27,18 +33,15 @@ class PAgent {
             for(let child of this._.children) {
                 // console.log("......handle", child.name);
                 if (stop) break;
-                let x = event.playfieldX - child.X0;
-                let y = event.playfieldY - child.Y0;
+                let [x, y] = child.deltas(event);
                 stop = this[eventType](child, x, y, event, this._.context, eventType);
             }
         }
-        if (!stop) stop = this.epilog(eventType, event);
+        stop = this.epilog(eventType, event);
         return stop;
     }
     prolog(eventType, event) {
         // this is called once at the beginning of event processing
-        // this === the root object
-        // you can use the "this" object to store contextual information that spans objects
         // can be overridden
     }
     epilog(eventType, event) {

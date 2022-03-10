@@ -1,4 +1,4 @@
-class PButtonGroup extends PGroup {
+class PGroupButton extends PGroup {
     static factory(args) {
         return (new this(args))._init(args);
     }
@@ -8,16 +8,14 @@ class PButtonGroup extends PGroup {
     _init(args) {
         super._init(args);
         this._makeable(this._.parent, "PAgentClickable")
+        this._makeable(this._.parent, "PAgentHoverable")
         return this;
     }
     onClick(x, y, event, context, eventType) {
-        // console.log("PButtonGroup.onClick", this.name, x, y);
+        console.log("PGroupButton.onClick", this.name, x, y);
         for(let child of this.children) {
             child._.isSelected = false;
         }
+        event.isDirty = true;
     }
-    onClickUp(x, y, event, context, eventType) {
-        // console.log("PButtonGroup.onClickUp", this.name, x, y);
-    }
-
 }

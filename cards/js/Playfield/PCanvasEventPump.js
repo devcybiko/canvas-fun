@@ -1,4 +1,4 @@
-class PCanvasEventStream {
+class PCanvasEventPump {
     static factory(args) {
         return (new this(args))._init(args);
     }
@@ -10,9 +10,18 @@ class PCanvasEventStream {
         p.canvas = document.querySelector(args.canvasId) || document.querySelector("#" + args.canvasId);
         if (!p.canvas) throw Error(`Could not find Canvas='${args.canvasId}' in DOM`);
         p.children = [];
+        p.fullScreen = true;
         p.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
         p.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
         p.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+        window.onresize = this.handleWindowResize.bind(this);
+
+        p.resizeHysterisis = 50;
+        p.resizeTimerId = null;
+        p.dWidth = 20;
+        p.dHeight = 20;
+        this.resize();
+    
         // p.canvas.addEventListener("touchstart", p.handleMouseDown.bind(this), { capture: true, passive: false });
         // p.canvas.addEventListener("touchend", p.handleMouseUp.bind(this), { capture: true, passive: false });
         // p.canvas.addEventListener("touchcancel", p.handleMouseUp.bind(this), { capture: true, passive: false });
@@ -27,7 +36,7 @@ class PCanvasEventStream {
             event.playfieldY = event.targetTouches[0].pageY - event.srcElement.offsetTop;
         } else {
             event.playfieldX = event.offsetX;
-            event.playfieldY = event.offsetY;    
+            event.playfieldY = event.offsetY;
         }
     }
     _dispatchEventAcrossPlayfields(eventType, event) {
@@ -37,11 +46,12 @@ class PCanvasEventStream {
             if (stop) break;
             event.isDirty = false;
             stop = child._dispatchAgents(eventType, event);
+            if (event.isDirty) child.draw();
         }
         return stop;
     }
 
-    get children() {return this._.children;}
+    get children() { return this._.children; }
 
     add(pobj) {
         this._.children.unshift(pobj)
@@ -66,5 +76,31 @@ class PCanvasEventStream {
     handleMouseMove(event) {
         event.preventDefault();
         event.stopPropagation();
-        // this._dispatchEventAcrossPlayfields("onMotion", event)
-    }}
+        this._dispatchEventAcrossPlayfields("onMotion", event)
+    }
+    handleWindowResize(event) {
+        this._updateEvent(event);
+        this.resize(undefined, undefined, undefined, undefined, event);
+    }
+    resize(x, y, w, h, event) {
+        let p = this._;
+        console.log(x,y,w,h)
+        if (x === undefined) {
+            // browser resized - resize the canvas to the size of this window
+            if (p.resizeTimerId) clearTimeout(p.resizeTimerId);
+            // its not a good idea to resize as the window is resizing, so wait a 'tick' before resizing the entire viewport
+            p.resizeTimerId = setTimeout(this.resize.bind(this), p.resizeHysterisis, 0, 0, window.innerWidth, window.innerHeight, event);
+            return;
+        }
+        p.resizeTimerId = null;
+        console.log(w,h);
+        p.canvas.x = x;
+        p.canvas.y = y;
+        p.canvas.width = w - p.dWidth;
+        p.canvas.height = h - p.dHeight;
+        for(let child of p.children) {
+            child.resize(w, h);
+            child.draw();
+        }
+    }
+}

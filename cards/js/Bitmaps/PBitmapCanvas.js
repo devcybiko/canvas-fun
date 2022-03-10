@@ -1,4 +1,4 @@
-class PCanvasBitMap extends PBitMap {
+class PBitmapCanvas extends PBitMap {
     static factory(args) {
         return (new this(args))._init(args);
     }

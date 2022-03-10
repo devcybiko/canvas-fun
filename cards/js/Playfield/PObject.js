@@ -49,8 +49,27 @@ class PObject {
                 stop = child._dispatchAgents(eventType, event);
             }
         }
-        if (event.isDirty) this.draw();
         return stop
+    }
+    _addAgent(agent) {
+        this._.agents.push(agent);
+    }
+    _makeable(parent, agentNames) {
+        agentNames = GArrays.ensureArray(agentNames);
+        let agents = parent._.agents.filter(agent => agentNames.indexOf(agent.name) >= 0);
+        for(let agent of agents) {
+            // console.log("_makeable", agent.name, parent.name, this.name, agentNames);
+            agent.add(this);
+        }
+    }
+    _getAgent(agentName) {
+        for(let agent of this._.agents) {
+            if (agent.name === agentName) return agent;
+        }
+    }
+    _getContext(agentName) {
+        let agent = this._getAgent(agentName);
+        if (agent) return agent.context;
     }
 
     get name() { return this._.name; }
@@ -80,16 +99,10 @@ class PObject {
         let result = _between(- dx / 2, x, this.w + dx / 2) && _between(- dy / 2, y, this.h + dy / 2);
         return result;
     }
-    _addAgent(agent) {
-        this._.agents.push(agent);
-    }
-    _makeable(parent, agentNames) {
-        agentNames = GArrays.ensureArray(agentNames);
-        let agents = parent._.agents.filter(agent => agentNames.indexOf(agent.name) >= 0);
-        for(let agent of agents) {
-            // console.log("_makeable", agent.name, parent.name, this.name, agentNames);
-            agent.add(this);
-        }
+    deltas(event) {
+        let x = event.playfieldX - this.X0;
+        let y = event.playfieldY - this.Y0;
+        return [x, y];
     }
     add(child, relrect) {
         let parent = this;

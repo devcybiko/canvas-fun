@@ -1,4 +1,4 @@
-class PBitmap {
+class PBitMap {
     static factory(args) {
         return (new this(args))._init(args);
     }

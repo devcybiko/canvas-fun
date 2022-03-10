@@ -14,10 +14,12 @@ class Playfield extends PObject {
     _init(args) {
         super._init(args);
         let p = this._;
-        p.bitmap = args.bitmap;
-        p.bitmap = args.bitmap;
+        p.canvasId = args.canvasId;
+        p.canvas = document.querySelector(args.canvasId) || document.querySelector("#" + args.canvasId);
+        p.bitmap = PBitmapCanvas.factory({canvasId: args.canvasId});
         p.rect = PRect.xywh(p.bitmap.x, p.bitmap.y, p.bitmap.w, p.bitmap.h);
         this._addAgent(PAgentClickable.factory());
+        this._addAgent(PAgentHoverable.factory());
         return this;
     }
     move(x0, y0, x1, y1) {
@@ -25,7 +27,12 @@ class Playfield extends PObject {
         this._recompute();
     }
     resize(w, h) {
-        this._.rect = this._.rect.resize(w, h);
+        console.log("resize", w, h)
+        // this._.rect = this._.rect.resize(w, h);
+        let p = this._;
+        p.canvas = document.querySelector(p.canvasId) || document.querySelector("#" + p.canvasId);
+        p.bitmap = PBitmapCanvas.factory({canvasId: p.canvasId});
+        p.rect = PRect.xywh(p.bitmap.x, p.bitmap.y, p.bitmap.w, p.bitmap.h);
         this._recompute();
     }
     box(x0, y0, w, h, borderColor, fillColor) {

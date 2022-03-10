@@ -1,7 +1,6 @@
-let canvasBM = PCanvasBitMap.factory({canvasId: "my_canvas"});
-let playfield = Playfield.factory({name: "playfield", bitmap: canvasBM});
+let playfield = Playfield.factory({name: "playfield", canvasId: "my_canvas"});
 // let screen = PObject.factory({name: "screen", parent: playfield, relrect: PRelRect.xywh(0, 0, 1.0, 1.0)});
-let menu = PButtonGroup.factory({name: "menu", parent: playfield, relrect: PRelRect.xyxy(0, 0, 1.0, 25)});
+let menu = PGroupButton.factory({name: "menu", parent: playfield, relrect: PRelRect.xyxy(0, 0, 1.0, 25)});
 let button1 = PButtonSelect.factory({name: "button1", parent: menu, relrect: PRelRect.xywh(0, 0, 0.25, 25), groupName: "menu"});
 let button2 = PButtonSelect.factory({name: "button2", parent: menu, relrect: PRelRect.xywh(0.25, 0.00, 0.25, 25), groupName: "menu"});
 let button3 = PButtonSelect.factory({name: "button3", parent: menu, relrect: PRelRect.xywh(0.50, 0.00, 0.25, 25), groupName: "menu"});
@@ -11,7 +10,7 @@ let body = PGroup.factory({name: "body", parent: playfield, relrect: PRelRect.xy
 let message0 = PButton.factory({name: "message0", parent: body, relrect: PRelRect.xywh(0.25, 0.5, 0.5, 0.5, 0, 0)});
 let message1 = PButtonToggle.factory({name: "message1", parent: body, relrect: PRelRect.xywh(0.25, 0.5, 0.5, 50, -50, 25)});
 let message2 = PButtonToggle.factory({name: "message2", parent: body, relrect: PRelRect.xywh(0.25, 0.5, 0.5, 25, 60, 10)});
-let message3 = PButtonToggle.factory({name: "message3", parent: body, relrect: PRelRect.xywh(0.25, 0.5, 0.5, 25, -50, -25)});
+let message3 = PButtonArmed.factory({name: "message3", parent: body, relrect: PRelRect.xywh(0.25, 0.5, 0.5, 25, -50, -25)});
 let message4 = PButtonToggle.factory({name: "message4", parent: body, relrect: PRelRect.xywh(0.25, 0.5, 0.5, 25, 50, 25)});
 
 function extend(fnName, obj, replacement) {
@@ -20,13 +19,13 @@ function extend(fnName, obj, replacement) {
     obj[fnName] = replacement.bind(obj);
 }
 
-extend("onClick", message0, function(x, y, event, context, eventType) {
+extend("fire", message3, function(x, y, event, context, eventType) {
     console.log("MESSAGE ZERO SAYS HELLO!", x, y, this.name);
     return this.orig(...arguments);
 });
 
-let canvasES = PCanvasEventStream.factory({canvasId: "my_canvas"});
-canvasES.add(playfield);
+let canvasEP = PCanvasEventPump.factory({canvasId: "my_canvas"});
+canvasEP.add(playfield);
 
 playfield.draw();
 
