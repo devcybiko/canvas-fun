@@ -34,7 +34,7 @@ class Playfield extends Rect {
         if (this._fullScreen) this.resize(0, 0, window.innerWidth, window.innerHeight);
         this._canvas.oncontextmenu = function (e) { e.preventDefault(); e.stopPropagation(); }
     }
-    _findObjInBounds(x, y) {
+    _findObjInora Bounds(x, y) {
         for (let obj of this.getChildren()) {
             if (obj.inBounds(x, y)) return obj
         }
