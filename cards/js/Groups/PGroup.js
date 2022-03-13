@@ -7,10 +7,12 @@ class PGroup extends PObject {
     }
     _init(args) {
         super._init(args);
+        this._addAgent(PAgentDraggable.factory());
         this._addAgent(PAgentClickable.factory());
         this._addAgent(PAgentHoverable.factory());
-        this._makeable(this._.parent, "PAgentHoverable")
-        this._makeable(this._.parent, "PAgentClickable")
+        this._makeable(this._.parent, "PAgentHoverable");
+        this._makeable(this._.parent, "PAgentClickable");
+
         return this;
     }
     onHover(x, y, event, context, eventType) {

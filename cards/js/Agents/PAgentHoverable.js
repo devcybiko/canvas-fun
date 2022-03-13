@@ -6,7 +6,9 @@ class PAgentHoverable extends PAgent {
         super(args);
     }
     _init(args) {
-        return super._init(args);
+        super._init(args);
+        this._.context.hoverObj = null;
+        return this;
     }
     setHover(obj, x, y, event, context, eventType) {
         this.clearHover(x, y, event, context, eventType);
@@ -42,8 +44,8 @@ class PAgentHoverable extends PAgent {
             }
         } else {
             if (currentObj === hoverObj) {
-                this.on("onHover", hoverObj, x, y, event, this.context, eventType);
-                stop = false;
+                stop = this.on("onHover", hoverObj, x, y, event, this.context, eventType);
+                // stop = false;
             } else if (currentObj) {
                 this.setHover(currentObj, x, y, event, this.context, eventType);
             } else {

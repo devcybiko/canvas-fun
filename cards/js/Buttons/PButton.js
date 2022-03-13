@@ -9,29 +9,30 @@ class PButton extends PObject {
     }
     _init(args) {
         super._init(args);
-        this._makeable(this._.parent, "PAgentClickable")
-        this._makeable(this._.parent, "PAgentHoverable")
+        this._makeable(this._.parent, "PAgentDraggable");
+        this._makeable(this._.parent, "PAgentClickable");
+        this._makeable(this._.parent, "PAgentHoverable");
         return this;
-    }
-    _flash() {
-        this._.flashCount--;
-        if (this._.flashCount > 2) return;
-        if (this._.flashCount % 2 == 1) this._.isSelected = true;
-        else this._.isSelected = false;
-        this.draw();
-        if (this._.flashCount === 0) clearInterval(this._.flashID);
     }
     onClick(x, y, event, context, eventType) {
         // console.log("CLICK!", this._.name, x, y);
-        this._.isSelected = true;
-        this._.flashCount = 5;
-        this._.flashID = setInterval(this._flash.bind(this), 50);
-        event.isDirty = true;
-        return true;
+        return false;
     }
     onClickUp(x, y, event, context, eventType) {
         // console.log("CLICKUP!", this._.name, x, y);
         return false;
+    }
+    onDragStart(x, y, event, context, eventType) {
+        this.toFront();
+        event.isDirty = true;
+        return true;
+    }
+    onDrag(x, y, event, context, eventType){
+        context.dragObj.move(x, y);
+        event.isDirty = true;
+        return true;
+    }
+    onDragStop(x, y, event, context, eventType) {
     }
     onEnter(x, y, event, context, eventType) {
         this._.isHovering = true;
@@ -54,8 +55,5 @@ class PButton extends PObject {
         if (this._.isHovering && this._.isSelected) backgroundColor = "#c80";
         this.box(0, 0, this.w, this.h, color, backgroundColor)
         this.text(p.name, 0, 0, null, this.w, this.h);
-        for (let child of this._.children) {
-            child.draw();
-        }
     }
 }

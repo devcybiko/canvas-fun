@@ -11,7 +11,7 @@ class PButtonArmed extends PButton {
     }
     arm(context, event) {
         console.log("ARM!", context);
-        if (context.armedObj) this.disarm(context)
+        if (context.armedObj) this.disarm(context, event)
         this._.isSelected = true;
         this._.isArmed = true;
         event.isDirty = true;
@@ -26,12 +26,12 @@ class PButtonArmed extends PButton {
     }
     fire(context, event) {
         console.log("FIRE!", context);
-        this._.flashCount = 5;
-        this._.flashID = setInterval(this._flash.bind(this), 50);
         this.disarm(context, event);
         event.isDirty = true;
     }
     onClick(x, y, event, context, eventType) {
+        this._.isSelected = true;
+        event.isDirty = true;
         this.arm(context, event);
     }
     onClickUp(x, y, event, context, eventType) {

@@ -28,7 +28,7 @@ class PAgent {
     handle(eventType, event) {
         // console.log("handle", this.name, eventType);
         let stop = this.prolog(eventType, event);
-        if (this[eventType]) {
+        if (!stop && this[eventType]) {
             // console.log("...handle", eventType);
             for(let child of this._.children) {
                 // console.log("......handle", child.name);

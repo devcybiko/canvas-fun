@@ -37,13 +37,15 @@ class PObject {
         return result;
     }
     _dispatchAgents(eventType, event) {
+        // _log("_dispatchAgents", eventType)
         let p = this._;
         let stop = false;
         for(let agent of p.agents) {
             if (stop) break;
+            // _log("..._dispatchAgents", agent)
             stop = agent.handle(eventType, event);
         }
-        if (p.perpetuateEvents && !stop) {
+        if (p.perpetuateEvents) {
             for(let child of this.children) {
                 if (stop) break;
                 stop = child._dispatchAgents(eventType, event);
@@ -56,6 +58,7 @@ class PObject {
     }
     _makeable(parent, agentNames) {
         agentNames = GArrays.ensureArray(agentNames);
+        _log(parent._.agents);
         let agents = parent._.agents.filter(agent => agentNames.indexOf(agent.name) >= 0);
         for(let agent of agents) {
             // console.log("_makeable", agent.name, parent.name, this.name, agentNames);
@@ -128,6 +131,16 @@ class PObject {
     resize(w, h) {
         this._.relrect.resize(w, h);
     }
+    toFront(child) {
+        _log("toFront")
+        if (!child) {
+            this.parent.toFront(this);
+        } else {
+            let i = this.children.indexOf(child);
+            this.children.splice(i, 1);
+            this.children.push(child);
+        }
+    }
     draw() {
         // console.log(this._.name, this.x0, this.y0, this.x1, this.y1, this.w, this.h);
         let p = this._;
@@ -137,4 +150,13 @@ class PObject {
             child.draw();
         }
     }
+    patch(fnName, replacementFn) {
+        let orig = this[fnName];
+        if (orig) {
+            this[fnName] = replacementFn.bind(this);
+            this[fnName].orig = orig.bind(this);   
+        } else {
+            console.error(new Error("Cannot patch fn=" + fnName));
+        }
+    }    
 }

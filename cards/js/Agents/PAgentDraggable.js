@@ -1,4 +1,4 @@
-class PDraggable extends PAgent{
+class PAgentDraggable extends PAgent{
     static factory(args) {
         return (new this(args))._init(args);
     }
@@ -6,38 +6,43 @@ class PDraggable extends PAgent{
         super(args);
     }
     _init(args) {
-        this._.obj = args.obj;
-        this._.startX = 0;
-        this._.startY = 0;
-        this._.origX = 0;
-        this._.origY = 0;
-        this._.dx = 0
-        this._.dy = 0;
-        this._.isDragging = 0;
-        return super._init(args);
-    }
-    handle(eventType, x, y, event) {
-        if (eventType === "onClick") return onClick(x, y, event);
-        if (eventType === "onMove") return onMove(x, y, event);
-        if (eventType === "onClickUp") return onClickUp(x, y, event);
-    }
-    onClick(x, y, event) {
+        super._init(args);
         let p = this._;
-        p.isDragging = true;
-        p.dx = x;
-        p.dy = y;
-        p.startX = event.playfieldX;
-        p.startY = event.playfieldY;
-        p.origX = p.obj.x;
-        p.origY = p.obj.y;
+        let context = p.context;
+        context.dragObj = null;
+        context.startX = 0;
+        context.startY = 0;
+        context.origX = 0;
+        context.origY = 0;
+        return this;
+    }
+    onClick(obj, x, y, event, context, eventType) {
+        if (!event.shiftKey) return false;
+        if (!obj.inBounds(x, y)) return false;
+        context.dragObj = obj;
+        context.startX = event.playfieldX;
+        context.startY = event.playfieldY;
+        context.origX = context.dragObj.x;
+        context.origY = context.dragObj.y;
+        event.isDirty = true;
+        if (obj.onDragStart) return obj.onDragStart(x, y, event, context, eventType);
+    }
+    onClickUp(obj, x, y, event, context, eventType) {
+        if (context.dragObj) {
+            context.dragObj = null;
+            if (obj.onDragStop) return obj.onDragStop(x, y, event, context, eventType);
+        }
+    }
+    onMotion(obj, x, y, event, context, eventType) {
+        if (!context.dragObj) return false;
+        if (!event.shiftKey) {
+            context.dragObj = null;
+            if (obj.onDragStop) return obj.onDragStop(x, y, event, context, eventType);
+        }
+        let dx = event.playfieldX - context.startX;
+        let dy = event.playfieldY - context.startY;
+        event.isDirty = true;
+        if (obj.onDrag) obj.onDrag(context.origX + dx, context.origY + dy, event, context, eventType)
         return true;
     }
-    onMove(x,y,event) {
-        let p = this._;
-        if (!p.isDragging) return;
-        dx = event.playfieldX - p.startX;
-        dy = event.playfieldY - p.startY;
-        p.obj.move(p.origX + dx, p.origY + dy);
-    }
-
 }
