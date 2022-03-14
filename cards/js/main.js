@@ -18,12 +18,12 @@ message3.patch("fire", function(x, y, event, context, eventType) {
     _log(foo--);
     if (foo <= 0) return;
     console.log("MESSAGE ZERO SAYS HELLO!", x, y, this.name);
-    return this.fire.orig(...arguments);
+    return arguments.callee.orig(...arguments);
 });
 
 message3.patch("fire", function(x, y, event, context, eventType) {
     console.log("Hello Again!!", x, y, this.name);
-    return this.fire.orig(...arguments);
+    return arguments.callee.orig(...arguments);
 });
 
 let canvasEP = PCanvasEventPump.factory({canvasId: "my_canvas"});

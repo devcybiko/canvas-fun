@@ -152,11 +152,25 @@ class PObject {
     }
     patch(fnName, replacementFn) {
         let orig = this[fnName];
+        let list = this._["$"+fnName];
         if (orig) {
-            this[fnName] = replacementFn.bind(this);
-            this[fnName].orig = orig.bind(this);   
+            if (!orig.next) {
+                // virgin, never been patched
+                this[fnName] = this.next.bind(this);
+                this[fnName].next = orig;
+            }
         } else {
             console.error(new Error("Cannot patch fn=" + fnName));
         }
-    }    
+    }
+    next(args) {
+        let fnArr = this._["$"+fnName];
+        if (fnArr) {
+            let fn = fnArr[n];
+            if (fn) {
+
+            }
+        }
+    }
+
 }
