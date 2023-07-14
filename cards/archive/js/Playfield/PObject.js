@@ -195,5 +195,5 @@ class PObject extends Rect {
         child._ctx = this._ctx;
     }
 }
-Mixin.mixin(PObject, { NodeMixin, GraphicsMixin, LoggingMixin });
+Mixin.mixin(PObject, { TreeMixin, GraphicsMixin, LoggingMixin });
 

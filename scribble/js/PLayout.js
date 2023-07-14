@@ -1,6 +1,6 @@
 class PLayout extends PObject {
     static {
-      this.mixin({ Node, GraphicsMixin, LoggingMixin });
+      this.mixin({ Tree, GraphicsMixin, LoggingMixin });
     }
     _init(args) {
         args = Mixin.getArgs(arguments, { name:"", xPercent:Number, yPercent:Number, wPercent:Number, hPercent:Number });

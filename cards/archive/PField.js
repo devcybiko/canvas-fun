@@ -1,4 +1,4 @@
-class PField {
+class ield {
     constructor(args) {
         this._rect = new PRect(); // actual coordinates relative to parent
         this._relrect = new PRect(); // percentages relative to parent's PRect
@@ -10,7 +10,7 @@ class PField {
     move(rect) { }
 }
 
-class PNode {
+class PTree {
     constructor(args) {
         this._parent = null;
         this._children = [];

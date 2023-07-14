@@ -103,4 +103,4 @@ class PLayoutObj extends PObject {
         this._debug = false;
     }
 }
-Mixin.mixin(PLayoutObj, { NodeMixin });
+Mixin.mixin(PLayoutObj, { TreeMixin });

@@ -240,4 +240,4 @@ class Playfield extends Rect {
         this._dispatchArgs("onResize", [this.x, this.y, this.w, this.h], this.getChildren());
     }
 }
-Mixin.mixin(Playfield, { NodeMixin, LoggingMixin});
+Mixin.mixin(Playfield, { TreeMixin, LoggingMixin});

@@ -1,5 +1,5 @@
-Node = {
-    Node() {
+Tree = {
+    Tree() {
         this._parent = null;
         this._children = [];
         this._data = {};

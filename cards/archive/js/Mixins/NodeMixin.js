@@ -1,5 +1,5 @@
-NodeMixin = {
-    NodeMixin() {
+TreeMixin = {
+    TreeMixin() {
         this._parent = null;
         this._children = [];
         this._data = {};

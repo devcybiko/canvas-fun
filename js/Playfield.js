@@ -1,6 +1,6 @@
 class Playfield extends Rect {
     static {
-        Mixin.mixin({ Node })
+        Mixin.mixin({ Tree })
     }
     static CONTINUE = "continue";
     static BREAK = "break";

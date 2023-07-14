@@ -1,6 +1,6 @@
 class PObject extends Rect {
     static {
-        Mixin.mixin({ Node, LoggingMixin });
+        Mixin.mixin({ Tree, LoggingMixin });
     }
     _defaults = {
     };
